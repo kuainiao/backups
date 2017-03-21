@@ -1,0 +1,276 @@
+1
+安装git
+
+2
+设置邮箱用户名称
+git config --global user.name "Your Name"
+git config --global user.email "email@example.com"
+
+3
+创建版本库
+git init
+
+4
+添加文件
+git add 文件路径
+git add . 全部文件
+
+5
+提交
+git commit -m"说明"
+
+6
+查看状态
+git status
+
+7
+查看历史记录
+git log
+
+历史记录精简信息
+git log --pretty=oneline
+
+8
+版本后退一次
+git reset --hard HEAD^
+版本后退两次
+git reset --hard HEAD^
+版本后退一百次
+git reset --hard HEAD~100
+版本回退指定版本
+数字为git log 版本号前几位
+git reset --hard 3628164
+
+9
+命令历史记录
+git reflog
+
+10
+查看版本库中跟工作区文件不同
+git diff HEAD -- readme.tx
+
+11
+丢弃工作区的修改
+git checkout -- readme.txt
+
+12
+暂存区退回到工作区
+git reset HEAD readme.txt
+
+13
+删除文件
+rm test.txt
+确定删除
+从版本库删除文件
+git rm test.txt
+取消删除
+git checkout -- test.txt
+
+14
+远程仓库
+生成密钥
+ssh-keygen -t rsa -C "youremail@example.com"
+公钥代码添加进去github中的密钥中
+
+15
+添加远程仓库
+git remote add origin git@github.com:名字/仓库名.git
+
+16
+推送远程仓库
+git push -u origin master
+
+17
+远程仓库克隆
+git clone git@github.com:名字/仓库名.git
+
+18
+创建分支并切换
+git checkout -b dev
+
+19
+查看当前分支
+git branch
+
+20
+切换分支
+git checkout master
+
+21
+合并分支
+git merge dev
+
+22
+删除分支
+git branch -d dev
+
+23
+git标记不同分支的内容
+<<<<<<<，=======，>>>>>>>
+
+24
+查看分支合并图
+git log --graph
+
+25
+强制禁用Fast forward模式删除分支
+
+创建分支并切换
+git checkout -b dev
+添加文件
+git add readme.txt
+提交文件
+git commit -m "add merge"
+切换分支
+git checkout master
+强制禁用Fast forward模式删除分支
+git merge --no-ff -m "说明" dev
+
+26
+储藏工作区
+git stash
+查看储藏工作区
+git stash list
+恢复储藏工作区stash内容并不删除
+git stash apply
+删除储藏工作区
+git stash drop
+恢复指定工作区
+git stash apply stash@{0}
+
+27
+临时分支
+创建临时分支并且换过去
+git checkout -b feature
+删除分支
+git branch -d feature
+没有合并分支强制删除分支
+git branch -D feature
+
+28
+查看远程仓库信息
+git remote
+更详细信息
+git remote -v
+推送远程仓库
+git push origin master
+将最新提交抓下来
+git pull
+提示“no tracking information”，则说明本地分支和远程分支的链接关系没有创建
+git branch --set-upstream branch-name origin/branch-name
+
+29
+创建标签
+git tag 1.0
+查看所有标签
+git tag
+查看历史提交
+git log --pretty=oneline --abbrev-commit
+后补添加标签
+git tag 版本号 commit_id
+创建有说明的标签
+git tag -a 版本号 -m "说明" commit_id
+查看标签说明
+git show 版本号
+私钥签名标签必须首先安装gpg（GnuPG）
+git tag -s v0.2 -m "signed version 0.2 released" fec145a
+删除标签
+git tag -d 版本号
+推送某个标签到远程
+git push origin 版本号
+推送所有未推送的标签
+git push origin --tags
+删除远程标签
+git push origin :refs/tags/版本号
+
+30
+修改git颜色更醒目
+git config --global color.ui true
+
+31
+忽略文件不上传某些文件
+在Git工作区的根目录下创建一个特殊的.gitignore文件，然后把要忽略的文件名填进去，Git就会自动忽略这些文件。
+# Windows:
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+32
+强制添加文件
+git add -f 文件路径
+
+33
+检查.gitignore规则是否有问题
+git check-ignore
+
+34
+配置别名
+git config --global alias.st status
+
+35
+先是最后一次提交
+git last
+
+36
+搭建git服务器
+必须是linux机器
+安装git
+GitHub就是一个免费托管开源代码的远程仓库。但是对于某些视源代码如生命的商业公司来说，既不想公开源代码，又舍不得给GitHub交保护费，那就只能自己搭建一台Git服务器作为私有仓库使用。
+
+搭建Git服务器需要准备一台运行Linux的机器，强烈推荐用Ubuntu或Debian，这样，通过几条简单的apt命令就可以完成安装。
+
+假设你已经有sudo权限的用户账号，下面，正式开始安装。
+
+第一步，安装git：
+
+$ sudo apt-get install git
+
+第二步，创建一个git用户，用来运行git服务：
+
+$ sudo adduser git
+
+第三步，创建证书登录：
+
+收集所有需要登录的用户的公钥，就是他们自己的id_rsa.pub文件，把所有公钥导入到/home/git/.ssh/authorized_keys文件里，一行一个。
+
+第四步，初始化Git仓库：
+
+先选定一个目录作为Git仓库，假定是/srv/sample.git，在/srv目录下输入命令：
+
+$ sudo git init --bare sample.git
+
+Git就会创建一个裸仓库，裸仓库没有工作区，因为服务器上的Git仓库纯粹是为了共享，所以不让用户直接登录到服务器上去改工作区，并且服务器上的Git仓库通常都以.git结尾。然后，把owner改为git：
+
+$ sudo chown -R git:git sample.git
+
+第五步，禁用shell登录：
+
+出于安全考虑，第二步创建的git用户不允许登录shell，这可以通过编辑/etc/passwd文件完成。找到类似下面的一行：
+
+git:x:1001:1001:,,,:/home/git:/bin/bash
+
+改为：
+
+git:x:1001:1001:,,,:/home/git:/usr/bin/git-shell
+
+这样，git用户可以正常通过ssh使用git，但无法登录shell，因为我们为git用户指定的git-shell每次一登录就自动退出。
+
+第六步，克隆远程仓库：
+
+现在，可以通过git clone命令克隆远程仓库了，在各自的电脑上运行：
+
+$ git clone git@server:/srv/sample.git
+Cloning into 'sample'...
+warning: You appear to have cloned an empty repository.
+
+剩下的推送就简单了。
+管理公钥
+
+如果团队很小，把每个人的公钥收集起来放到服务器的/home/git/.ssh/authorized_keys文件里就是可行的。如果团队有几百号人，就没法这么玩了，这时，可以用Gitosis来管理公钥。
+
+这里我们不介绍怎么玩Gitosis了，几百号人的团队基本都在500强了，相信找个高水平的Linux管理员问题不大。
+管理权限
+
+有很多不但视源代码如生命，而且视员工为窃贼的公司，会在版本控制系统里设置一套完善的权限控制，每个人是否有读写权限会精确到每个分支甚至每个目录下。因为Git是为Linux源代码托管而开发的，所以Git也继承了开源社区的精神，不支持权限控制。不过，因为Git支持钩子（hook），所以，可以在服务器端编写一系列脚本来控制提交等操作，达到权限控制的目的。Gitolite就是这个工具。
+
+这里我们也不介绍Gitolite了，不要把有限的生命浪费到权限斗争中。
