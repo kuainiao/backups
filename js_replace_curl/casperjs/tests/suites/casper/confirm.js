@@ -1,4 +1,5 @@
-/*eslint strict:0*/
+/*global casper*/
+/*jshint strict:false*/
 casper.test.begin('can confirm dialog', 2, {
     received: undefined,
 
@@ -26,7 +27,7 @@ casper.test.begin('can confirm dialog', 2, {
     }
 });
 
-casper.test.begin('can cancel dialog', 1, {
+casper.test.begin('can cancel dialog', {
     received: undefined,
 
     setUp: function(test) {

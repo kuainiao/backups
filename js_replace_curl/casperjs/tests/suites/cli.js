@@ -1,4 +1,5 @@
-/*eslint strict:0, max-statements:0*/
+/*global casper*/
+/*jshint strict:false, maxstatements:99*/
 var cli = require('cli');
 
 casper.test.begin('parsing an empty argument list', 12, function(test) {

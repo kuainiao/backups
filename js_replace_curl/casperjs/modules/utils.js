@@ -2,7 +2,7 @@
  * Casper is a navigation utility for PhantomJS.
  *
  * Documentation: http://casperjs.org/
- * Repository:    http://github.com/casperjs/casperjs
+ * Repository:    http://github.com/n1k0/casperjs
  *
  * Copyright (c) 2011-2012 Nicolas Perriault
  *
@@ -28,6 +28,7 @@
  *
  */
 
+/*global CasperError, console, exports, phantom, patchRequire, require:true*/
 
 var require = patchRequire(require);
 
@@ -79,7 +80,7 @@ exports.betterTypeOf = betterTypeOf;
  */
 function betterInstanceOf(input, constructor) {
     "use strict";
-    /*eslint eqeqeq:0 */
+    /*jshint eqnull:true, eqeqeq:false */
     if (typeof input == 'undefined' || input == null) {
       return false;
     }
@@ -427,7 +428,7 @@ exports.isClipRect = isClipRect;
  */
 function isFalsy(subject) {
     "use strict";
-    /*eslint eqeqeq:0*/
+    /*jshint eqeqeq:false*/
     return !subject;
 }
 exports.isFalsy = isFalsy;
@@ -464,12 +465,7 @@ exports.isHTTPResource = isHTTPResource;
 function isJsFile(file) {
     "use strict";
     var ext = fileExt(file);
-    var valid = Object.keys(require.extensions).map(function(val) {
-        return val.replace(/^\./, '');
-    }).filter(function(ext) {
-        return ext === 'js' || ext === 'coffee';
-    });
-    return isString(ext, "string") && valid.indexOf(ext) !== -1;
+    return isString(ext, "string") && ['js', 'coffee'].indexOf(ext) !== -1;
 }
 exports.isJsFile = isJsFile;
 
@@ -541,7 +537,7 @@ exports.isString = isString;
  */
 function isTruthy(subject) {
     "use strict";
-    /*eslint eqeqeq:0*/
+    /*jshint eqeqeq:false*/
     return !!subject;
 }
 exports.isTruthy = isTruthy;
@@ -638,7 +634,7 @@ function isPlainObject(obj) {
  * @param  Object  opts    optional options to be passed in
  * @return Object
  */
-function mergeObjectsInGecko(origin, add, opts) {
+function mergeObjectsInSlimerjs(origin, add, opts) {
     "use strict";
 
     var options = opts || {},
@@ -652,18 +648,7 @@ function mergeObjectsInGecko(origin, add, opts) {
                 origin[p] = keepReferences ? add[p] : clone(add[p]);
             }
         } else {
-            // if a property is only a getter, we could have a Javascript error
-            // in strict mode "TypeError: setting a property that has only a getter"
-            // when setting the value to the new object (gecko 25+).
-            // To avoid it, let's define the property on the new object, do not set
-            // directly the value
-            var prop = Object.getOwnPropertyDescriptor(add, p);
-            if (prop.get && !prop.set) {
-                Object.defineProperty(origin, p, prop);
-            }
-            else {
-                origin[p] = add[p];
-            }
+            origin[p] = add[p];
         }
     }
     return origin;
@@ -687,7 +672,7 @@ function mergeObjects(origin, add, opts) {
         // Because of an issue in the module system of slimerjs (security membranes?)
         // constructor is undefined.
         // let's use an other algorithm
-        return mergeObjectsInGecko(origin, add, options);
+        return mergeObjectsInSlimerjs(origin, add);
     }
 
     for (var p in add) {
@@ -726,7 +711,7 @@ exports.ms2seconds = ms2seconds;
  */
 function node(name, attributes) {
     "use strict";
-    var _node   = document.createElementNS('', name);
+    var _node   = document.createElement(name);
     for (var attrName in attributes) {
         var value = attributes[attrName];
         if (attributes.hasOwnProperty(attrName) && isString(attrName)) {
@@ -808,21 +793,6 @@ function unique(array) {
 exports.unique = unique;
 
 /**
- * Convert a version object to a string.
- *
- * @param  Mixed version  a version string or object
- */
-function versionToString(version) {
-    if (isObject(version)) {
-        try {
-            return [version.major, version.minor, version.patch].join('.');
-        } catch (e) {}
-    }
-    return version;
-}
-exports.versionToString = versionToString;
-
-/**
  * Compare two version numbers represented as strings.
  *
  * @param  String  a  Version a
@@ -832,6 +802,14 @@ exports.versionToString = versionToString;
 function cmpVersion(a, b) {
     "use strict";
     var i, cmp, len, re = /(\.0)+[^\.]*$/;
+    function versionToString(version) {
+        if (isObject(version)) {
+            try {
+                return [version.major, version.minor, version.patch].join('.');
+            } catch (e) {}
+        }
+        return version;
+    }
     a = versionToString(a);
     b = versionToString(b);
     a = (a + '').replace(re, '').split('.');
@@ -872,55 +850,3 @@ function ltVersion(a, b) {
     return cmpVersion(a, b) < 0;
 }
 exports.ltVersion = ltVersion;
-
-/**
- * Checks if the engine matches a specifier.
- *
- * A match specifier is an object of the form:
- * {
- *     name: 'casperjs' | 'phantomjs',
- *     version: {
- *         min:   Object,
- *         max:   Object
- *     },
- *     message: String
- * }
- *
- * Minimal and maximal versions to be matched are determined using
- * utils.cmpVersion.
- *
- * @param  Mixed    matchSpec  a single match specifier object or
- *                             an Array of match specifier objects
- * @return Boolean
- */
-function matchEngine(matchSpec) {
-    if (Array !== matchSpec.constructor) {
-        matchSpec = [matchSpec];
-    }
-    var idx;
-    var len = matchSpec.length;
-
-    var engineName = phantom.casperEngine;
-    var engineVersion = phantom.version;
-
-    for (idx = 0; idx < len; ++idx) {
-        var match = matchSpec[idx];
-        var version = match.version;
-        var min = version && version.min;
-        var max = version && version.max;
-        if ('*' === min) {
-            min = null;
-        }
-        if ('*' === max) {
-            max = null;
-        }
-        if (match.name === engineName &&
-            (!min || gteVersion(engineVersion, min)) &&
-            (!max || !ltVersion(max, engineVersion))
-        ) {
-            return match;
-        }
-    }
-    return false;
-}
-exports.matchEngine = matchEngine;

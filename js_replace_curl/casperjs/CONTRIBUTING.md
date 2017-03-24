@@ -11,7 +11,7 @@ Please do **not** create a pull request without reading this guide first. Failur
 **Work on a feature branch**.
 If your changes need to be modified due to some reviews, it is less clutter to tweak an isolated feature branch and push it again.
 
-**Create a ticket in the [issue tracker](https://github.com/casperjs/casperjs/issues/)**.
+**Create a ticket in the [issue tracker](https://github.com/n1k0/casperjs/issues/)**.
 This serves as a placeholder for important feedback, review, or any future updates. **Please ensure searching the bugtracker for an already opened issue matching your case before filing a new issue.**
 
 In the commit message(s):
@@ -29,15 +29,9 @@ Sample commit message:
 
 Run CasperJS' test suite to see you didn't break something:
 
-    $ casperjs selftest && casper selftest --engine=slimerjs
+    $ casperjs selftest
 
 The result status bar **must be green** before sending your PR.
-
-**Lint the code**
-
-Run [ESLint](http://eslint.org) on the JavaScript files, by using the configuration available in `.eslintrc` and make sure there are no warnings nor errors.
-
-    $ eslint modules/casper.js
 
 ## Communicate
 
@@ -67,7 +61,7 @@ Some good practices for the feature branch:
 
 ### Write tests
 
-CasperJS being partly a testing framework, how irrelevant would be to send a pull request with no test? So, please take the time to write and attach tests to your PR. Furthermore, testing with CasperJS is quite [exhaustively documented](http://docs.casperjs.org/en/latest/testing.html).
+CasperJS being partly a testing framework, how irrelevant would be to send a pull request with no test? So, please take the time to write and attach tests to your PR. Furthermore, testing with CasperJS is quite [exhaustively documented](http://casperjs.org/testing.html).
 
 ### Run tests!
 
@@ -79,9 +73,9 @@ To see if your modifications broke the suite, just run:
 
 ### Write documentation
 
-Do you appreciate the [CasperJS documentation](http://casperjs.org/)? I do too. As the documentation contents are managed and generated using Github, Markdown and CasperJS itself, take the time to read the [Documentation Contribution Guide](https://github.com/casperjs/casperjs/blob/gh-pages/README.md#casperjs-documentation) and write the documentation related to your PR whenever applicable.
+Do you appreciate the [CasperJS documentation](http://casperjs.org/)? I do too. As the documentation contents are managed and generated using Github, Markdown and CasperJS itself, take the time to read the [Documentation Contribution Guide](https://github.com/n1k0/casperjs/blob/gh-pages/README.md#casperjs-documentation) and write the documentation related to your PR whenever applicable.
 
-**Note:** As the documentation is handled in a [dedicated separated `gh-pages` branch](https://github.com/casperjs/casperjs/tree/gh-pages), you'll have to send a dedicated PR for doc patches. I'm working on a more comfortable solution, but it's no easy task though.
+**Note:** As the documentation is handled in a [dedicated separated `gh-pages` branch](https://github.com/n1k0/casperjs/tree/gh-pages), you'll have to send a dedicated PR for doc patches. I'm working on a more comfortable solution, but it's no easy task though.
 
 ## Review and Merge
 

@@ -1,4 +1,5 @@
-/*eslint strict:0*/
+/*global casper*/
+/*jshint strict:false*/
 casper.test.begin('callback events', 1, {
     ok: false,
 

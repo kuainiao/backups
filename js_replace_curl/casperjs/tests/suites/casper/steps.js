@@ -1,4 +1,5 @@
-/*eslint strict:0*/
+/*global casper*/
+/*jshint strict:false*/
 casper.test.begin('steps tests', 8, function(test) {
     casper.start('tests/site/index.html');
 
@@ -35,9 +36,8 @@ casper.test.begin('steps tests', 8, function(test) {
     });
 });
 
-casper.test.begin('eachThen() tests', 2, function(test) {
+casper.test.begin('eachThen() tests', 1, function(test) {
     var received = [];
-    var receivedFalsy = [];
 
     casper.start().eachThen([1, 2, 3], function(response) {
         if (!response) {
@@ -46,24 +46,9 @@ casper.test.begin('eachThen() tests', 2, function(test) {
         received.push(response.data);
     });
 
-    casper.then(function() {
+    casper.run(function() {
         test.assertEquals(received, [1, 2, 3],
             'Casper.eachThen() passes item to step data');
-    });
-
-    casper.eachThen([false, 0, ''], function(response) {
-        if (!response) {
-            test.fail('No response received');
-        }
-        receivedFalsy.push(response.data);
-    });
-
-    casper.then(function() {
-        test.assertEquals(receivedFalsy, [false, 0, ''],
-            'Casper.eachThen() passes falsy items to step data');
-    });
-
-    casper.run(function() {
         test.done();
     });
 });

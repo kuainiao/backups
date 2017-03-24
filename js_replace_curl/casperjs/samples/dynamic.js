@@ -1,4 +1,4 @@
-/*eslint strict:0*/
+/*jshint strict:false*/
 /*global CasperError, console, phantom, require*/
 
 var casper = require("casper").create({

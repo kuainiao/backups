@@ -1,4 +1,5 @@
-/*eslint strict:0*/
+/*global casper*/
+/*jshint strict:false*/
 var usedSettings;
 
 function onOpen(url, settings) {
@@ -50,26 +51,6 @@ casper.test.begin('open() GET casing tests', 2, {
     }
 });
 
-casper.test.begin('open() (JS disabled) tests', 3, {
-    setUp: setUp,
-    tearDown: tearDown,
-    test: function(test) {
-        casper.options.pageSettings.javascriptEnabled = false;
-        casper.open('tests/site/alert.html').then(function() {
-            test.pass("Casper.open() can open and load a location using GET, with JS disabled");
-            test.assertEquals(usedSettings, {
-                method: "get"
-            }, "Casper.open() used the expected GET settings");
-            test.assertHttpStatus(200, "Response Code is 200");
-        });
-
-        casper.run(function() {
-            test.done();
-            casper.options.pageSettings.javascriptEnabled = true;
-        });
-    }
-});
-
 casper.test.begin('open() POST tests', 2, {
     setUp: setUp,
     tearDown: tearDown,
@@ -109,68 +90,6 @@ casper.test.begin('open() POST casing tests', 2, {
             test.assertEquals(usedSettings, {
                 method: "POST",
                 data:   "plop=42&chuck=norris"
-            }, "Casper.open() used the expected POST settings");
-        });
-
-        casper.run(function() {
-            test.done();
-        });
-    }
-});
-
-casper.test.begin('open() POST json object', 2, {
-    setUp: setUp,
-    tearDown: tearDown,
-    test: function(test) {
-        casper.open('tests/site/index.html', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            data:   {
-                plop: 42,
-                chuck: 'norris',
-                john: {'Doe': 'is here'}
-            }
-        }).then(function() {
-            test.pass("Casper.open() can POST a JSON object");
-            test.assertEquals(usedSettings, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                data: '{"plop":42,"chuck":"norris","john":{"Doe":"is here"}}'
-            }, "Casper.open() used the expected POST settings");
-        });
-
-        casper.run(function() {
-            test.done();
-        });
-    }
-});
-
-casper.test.begin('open() POST json object with charset info', 2, {
-    setUp: setUp,
-    tearDown: tearDown,
-    test: function(test) {
-        casper.open('tests/site/index.html', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json; charset=utf-8'
-            },
-            data:   {
-                plop: 42,
-                chuck: 'norris',
-                john: {'Doe': 'is here'}
-            }
-        }).then(function() {
-            test.pass("Casper.open() can POST a JSON object");
-            test.assertEquals(usedSettings, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json; charset=utf-8'
-                },
-                data: '{"plop":42,"chuck":"norris","john":{"Doe":"is here"}}'
             }, "Casper.open() used the expected POST settings");
         });
 
@@ -343,40 +262,3 @@ casper.test.begin('open() PUT tests', 2, {
         });
     }
 });
-
-
-casper.test.begin('open() POST json object with utf8 content', 2, {
-    setUp: setUp,
-    tearDown: tearDown,
-    test: function(test) {
-        casper.open('tests/site/index.html', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json; charset=utf-8'
-            },
-            encoding: 'utf8',
-            data:   {
-                plop: 42,
-                chuck: 'nórrïs',
-                john: {'Doe': 'ïs here™€'}
-            }
-        }).then(function() {
-            test.pass("Casper.open() can POST a JSON object");
-            test.assertEquals(usedSettings, {
-                method: "POST",
-                encoding: 'utf8',
-                headers: {
-                    'Content-Type': 'application/json; charset=utf-8'
-                },
-                data: '{"plop":42,"chuck":"nórrïs","john":{"Doe":"ïs here™€"}}'
-            }, "Casper.open() used the expected POST settings");
-        });
-
-        casper.run(function() {
-            test.done();
-        });
-    }
-});
-
-
-

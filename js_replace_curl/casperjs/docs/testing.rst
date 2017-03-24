@@ -114,20 +114,6 @@ You'll probably get something like this:
    :align: center
 
 
-.. index:: options
-
-Setting Casper options in the test environment
-----------------------------------------------
-
-As you must use a preconfigured ``casper`` instance within the test environment, updating its :ref:`options <casper_options>` can be achieved this way::
-
-    casper.options.optionName = optionValue; // where optionName is obviously the desired option name
-
-    casper.options.clientScripts.push("new-script.js");
-
-
-.. index:: setUp, tearDown
-
 Advanced techniques
 -------------------
 
@@ -158,7 +144,7 @@ Test command args and options
 Arguments
 ~~~~~~~~~
 
-The ``casperjs test`` command will treat every passed argument as file or directory paths containing tests. It will recursively scan any passed directory to search for ``*.js`` or ``*.coffee`` files and add them to the stack.
+The ``capserjs test`` command will treat every passed argument as file or directory paths containing tests. It will recursively scan any passed directory to search for ``*.js`` or ``*.coffee`` files and add them to the stack.
 
 .. warning ::
 
@@ -187,9 +173,9 @@ Options are prefixed with a double-dash (``--``):
 
 .. versionadded:: 1.0
 
-- ``--includes=foo.js,bar.js`` will include the ``foo.js`` and  ``bar.js`` files before each test file execution.
-- ``--pre=pre-test.js`` will add the tests contained in ``pre-test.js`` **before** executing the whole test suite.
-- ``--post=post-test.js`` will add the tests contained in ``post-test.js`` **after** having executed the whole test suite.
+- ``--includes=foo.js,bar.js`` will include the ``foo.js`` and  ``bar.js`` files before each test file execution;
+- ``--pre=pre-test.js`` will add the tests contained in ``pre-test.js`` **before** executing the whole test suite;
+- ``--post=post-test.js`` will add the tests contained in ``post-test.js`` **after** having executed the whole test suite;
 - ``--fail-fast`` will terminate the current test suite as soon as a first failure is encountered.
 - ``--concise`` will create a more concise output of the test suite.
 - ``--no-colors`` will create an output without (beautiful) colors from casperjs.
@@ -209,7 +195,6 @@ Sample custom command:
 .. warning::
 
    .. deprecated:: 1.1
-
    ``--direct`` option has been renamed to ``--verbose``, though ``--direct`` will still works, while is to be considered deprecated.
 
 .. hint::
@@ -246,27 +231,6 @@ You should get a pretty XUnit XML report like this:
         </testsuite>
     </testsuites>
 
-You can customize the value for the `name` property by passing an object to `casper.test.fail()` like:
-
-.. code-block:: js
-
-    casper.test.fail('google search for "casperjs" retrieves 10 or more results', {name: 'result count is 10+'});
-
-.. code-block:: xml
-
-    <?xml version="1.0" encoding="UTF-8"?>
-    <testsuites duration="1.249">
-        <testsuite errors="0" failures="0" name="Google search retrieves 10 or more results" package="googletesting" tests="5" time="1.249" timestamp="2012-12-30T21:27:26.320Z">
-            <testcase classname="googletesting" name="google homepage title is the one expected" time="0.813"/>
-            <testcase classname="googletesting" name="main form is found" time="0.002"/>
-            <testcase classname="googletesting" name="google title is ok" time="0.416"/>
-            <testcase classname="googletesting" name="search term has been submitted" time="0.017"/>
-            <testcase classname="googletesting" name="results count is 10+" time="0.001"/>
-                <failure type="fail">google search for "casperjs" retrieves 10 or more results</failure>
-            <system-out/>
-        </testsuite>
-    </testsuites>
-
 CasperJS own tests
 ------------------
 
@@ -278,7 +242,7 @@ CasperJS has its own unit and functional test suite, located in the ``tests`` su
 
 .. note::
 
-   Running this test suite is a great way to find any bug on your platform. If it fails, feel free to `file an issue <https://github.com/casperjs/casperjs/issues/new>`_ or to ask on the `CasperJS mailing-list <https://groups.google.com/forum/#!forum/casperjs>`_.
+   Running this test suite is a great way to find any bug on your platform. If it fails, feel free to `file an issue <https://github.com/n1k0/casperjs/issues/new>`_ or to ask on the `CasperJS mailing-list <https://groups.google.com/forum/#!forum/casperjs>`_.
 
 
 .. index:: extending
@@ -302,4 +266,4 @@ So if you want to extend Casper capabilities for your tests, your best bet is to
 
 .. hint::
 
-   You can find the default runner code in `run.js <https://github.com/casperjs/casperjs/blob/master/tests/run.js>`_.
+   You can find the default runner code in `run.js <https://github.com/n1k0/casperjs/blob/master/tests/run.js>`_.

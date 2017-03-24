@@ -1,4 +1,5 @@
-/*eslint strict:0*/
+/*global casper*/
+/*jshint strict:false*/
 casper.test.begin('start() tests', 4, function(test) {
     casper.start('tests/site/index.html', function() {
         test.pass('Casper.start() can chain a next step');

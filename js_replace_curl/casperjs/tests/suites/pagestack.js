@@ -1,4 +1,5 @@
-/*eslint strict:0, max-statements:0*/
+/*global casper*/
+/*jshint strict:false, maxstatements:99*/
 var pagestack = require('pagestack');
 var utils = require('utils');
 var webpage = require('webpage');
@@ -23,7 +24,7 @@ casper.test.begin('pagestack module tests', 14, function(test) {
     test.assertEquals(stack.list().length, 2);
     test.assertEquals(stack.list()[1], page2.url);
 
-    test.assertEquals(stack.clean(), 1);
+    test.assertEquals(stack.clean(page1), 1);
     test.assertEquals(stack[0], page2);
     test.assertEquals(stack.list().length, 1);
     test.assertEquals(stack.list()[0], page2.url);

@@ -10,7 +10,7 @@ Casper ships with a ``tester`` module and a ``Tester`` class providing an API fo
 
 .. note::
 
-   The best way to learn how to use the Tester API and see it in action is probably to have a look at `CasperJS' own test suites <https://github.com/casperjs/casperjs/blob/master/tests/suites/>`_.
+   The best way to learn how to use the Tester API and see it in action is probably to have a look at `CasperJS' own test suites <https://github.com/n1k0/casperjs/blob/master/tests/suites/>`_.
 
 
 The ``Tester`` prototype
@@ -203,10 +203,10 @@ The `options` parameter allows to set the options to use with
 
 Asserts that a given form field has the provided value::
 
-    casper.test.begin('assertFieldName() tests', 1, function(test) {
+    casper.test.begin('assertField() tests', 1, function(test) {
         casper.start('http://www.google.fr/', function() {
             this.fill('form[name="gs"]', { q: 'plop' }, false);
-            test.assertFieldName('q', 'plop', 'did not plop', {formSelector: 'plopper'});
+            test.assertField('q', 'plop', 'did not plop', {formSelector: 'plopper'});
         }).run(function() {
             test.done();
         });
@@ -221,10 +221,10 @@ Asserts that a given form field has the provided value::
 
 Asserts that a given form field has the provided value given a CSS selector::
 
-    casper.test.begin('assertFieldCSS() tests', 1, function(test) {
+    casper.test.begin('assertField() tests', 1, function(test) {
         casper.start('http://www.google.fr/', function() {
             this.fill('form[name="gs"]', { q: 'plop' }, false);
-            test.assertFieldCSS('q', 'plop', 'did not plop', 'input.plop');
+            test.assertField('q', 'plop', 'did not plop', 'input.plop');
         }).run(function() {
             test.done();
         });
@@ -239,10 +239,10 @@ Asserts that a given form field has the provided value given a CSS selector::
 
 Asserts that a given form field has the provided value given a XPath selector::
 
-    casper.test.begin('assertFieldXPath() tests', 1, function(test) {
+    casper.test.begin('assertField() tests', 1, function(test) {
         casper.start('http://www.google.fr/', function() {
             this.fill('form[name="gs"]', { q: 'plop' }, false);
-            test.assertFieldXPath('q', 'plop', 'did not plop', '/html/body/form[0]/input[1]');
+            test.assertField('q', 'plop', 'did not plop', '/html/body/form[0]/input[1]');
         }).run(function() {
             test.done();
         });
@@ -320,10 +320,7 @@ Asserts that the element matching the provided :ref:`selector expression <select
         });
     });
 
-.. seealso::
-
-   - `assertVisible()`_
-   - `assertAllVisible()`_
+.. seealso:: `assertVisible()`_
 
 .. index:: error
 
@@ -562,7 +559,7 @@ Asserts that the current page url matches the provided RegExp pattern::
 
 **Signature:** ``assertVisible(String selector[, String message])``
 
-Asserts that at least one element matching the provided :ref:`selector expression <selectors>` is visible::
+Asserts that the element matching the provided :ref:`selector expression <selectors>` is visible::
 
     casper.test.begin('assertVisible() tests', 1, function(test) {
         casper.start('http://www.google.fr/', function() {
@@ -572,32 +569,7 @@ Asserts that at least one element matching the provided :ref:`selector expressio
         });
     });
 
-.. seealso::
-
-   - `assertAllVisible()`_
-   - `assertNotVisible()`_
-
-.. index:: DOM
-
-``assertAllVisible()``
--------------------------------------------------------------------------------
-
-**Signature:** ``assertAllVisible(String selector[, String message])``
-
-Asserts that all elements matching the provided :ref:`selector expression <selectors>` are visible::
-
-    casper.test.begin('assertAllVisible() tests', 1, function(test) {
-        casper.start('http://www.google.fr/', function() {
-            test.assertAllVisible('input[type="submit"]');
-        }).run(function() {
-            test.done();
-        });
-    });
-
-.. seealso::
-
-   - `assertVisible()`_
-   - `assertNotVisible()`_
+.. seealso:: `assertNotVisible()`_
 
 .. _tester_begin:
 
@@ -749,12 +721,11 @@ Writes an error-style formatted message to stdout::
 ``fail()``
 -------------------------------------------------------------------------------
 
-**Signature:** ``fail(String message [, Object option])``
+**Signature:** ``fail(String message)``
 
 Adds a failed test entry to the stack::
 
     casper.test.fail("Georges W. Bush");
-    casper.test.fail("Here goes a really long and expressive message", {name:'shortfacts'});
 
 .. seealso:: `pass()`_
 
@@ -814,7 +785,7 @@ That will give something like this:
 
 .. note::
 
-    In CasperJS 1.1, you can recorded test failures by listening to the tester ``fail`` event::
+    In CasperJS 1.1, you can store test successes by recording them listening to the tester ``pass`` event::
 
         var failures = [];
 
@@ -861,11 +832,11 @@ That will give something like this::
 
 .. note::
 
-   In CasperJS 1.1, you can recorded test successes by listening to the tester ``success`` event::
+   In CasperJS 1.1, you can store test successes by recording them listening to the tester ``pass`` event::
 
        var successes = [];
 
-       casper.test.on("success", function(success) {
+       casper.test.on("pass", function(success) {
          successes.push(success);
        });
 
@@ -948,7 +919,7 @@ Skips a given number of planned tests::
 
 **Signature:** ``tearDown([Function fn])``
 
-Defines a function which will be executed after every test defined using `begin()`_::
+Defines a function which will be executed before after every test defined using `begin()`_::
 
     casper.test.tearDown(function() {
         casper.echo('See ya');

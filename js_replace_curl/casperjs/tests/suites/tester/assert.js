@@ -1,7 +1,8 @@
-/*eslint strict:0, max-statements:0*/
+/*global casper*/
+/*jshint strict:false, maxstatements:99*/
 var fs = require('fs');
 
-casper.test.begin('Common assertions tests', 50, function(test) {
+casper.test.begin('Common assertions tests', 46, function(test) {
     casper.start('tests/site/index.html', function() {
         test.assertTextExists('form', 'Tester.assertTextExists() checks that page body contains text');
         test.assertTextExist('form', 'Tester.assertTextExist() checks that page body contains text [alias]');
@@ -39,7 +40,7 @@ casper.test.begin('Common assertions tests', 50, function(test) {
         test.assertSelectorExists('body', 'Tester.assertSelectorExists() works as expected [alias]');
         test.assertSelectorExist('body', 'Tester.assertSelectorExist() works as expected [alias]');
         test.assertDoesntExist('foobar', 'Tester.assertDoesntExist() works as expected');
-        test.assertNotExists('foobar', 'Tester.assertNotExists() works as expected [alias]');
+        test.assertDoesntExist('foobar', 'Tester.assertNotExist() works as expected [alias]');
         // using file:// protocol, HTTP status is always null
         test.assertHttpStatus(200, 'Tester.assertHttpStatus() works as expected');
         test.assertMatch("the lazy dog", /lazy/, 'Tester.assertMatch() works as expected');
@@ -47,12 +48,12 @@ casper.test.begin('Common assertions tests', 50, function(test) {
         test.assertRaises(function() {
             throw new Error('plop');
         }, [], 'Tester.assertRaises() works as expected');
-        try {
-            test.assertRaises(function() {}, []);
-            test.fail("Tester.assertRaises() doesn't pass when no error is thrown");
-        } catch (err) {
-            test.pass("Tester.assertRaises() doesn't pass when no error is thrown");
-        }
+        test.assertRaise(function() {
+            throw new Error('plop');
+        }, [], 'Tester.assertRaise() works as expected [alias]');
+        test.assertThrows(function() {
+            throw new Error('plop');
+        }, [], 'Tester.assertThrows() works as expected [alias]');
         test.assertResourceExists(/index\.html/, 'Tester.assertResourceExists() works as expected');
         test.assertResourceExist(/index\.html/, 'Tester.assertResourceExist() works as expected [alias]');
         test.assertTitle('CasperJS test index', 'Tester.assertTitle() works as expected');
@@ -63,13 +64,8 @@ casper.test.begin('Common assertions tests', 50, function(test) {
         test.assertUrlMatch(/index\.html$/, "Tester.assertUrlMatch() works as expected");
         test.assertUrlMatches(/index\.html$/, "Tester.assertUrlMatches() works as expected [alias]");
         test.assertVisible('img', 'Tester.assertVisible() works as expected');
-        test.assertAllVisible('li', 'Tester.assertAllVisible() passes as expected');
-        test.assertFail(function(){
-            test.assertAllVisible('img, p#hidden');
-        }, 'Tester.assertAllVisible() fails as expected.');
         test.assertNotVisible('p#hidden', 'Tester.assertNotVisible() works as expected');
         test.assertInvisible('p#hidden', 'Tester.assertInvisible() works as expected [alias]');
-        test.assertExists('div#exports', 'Tester.assertExists() works as expected with reserved word id');
     }).run(function() {
         test.done();
     });
@@ -90,7 +86,7 @@ casper.test.begin('Tester.assertField(): filled inputs', 7, function(test) {
         test.assertField('content', '', 'Tester.assertField() works as expected with textarea');
         test.assertField('check', false, 'Tester.assertField() works as expected with checkboxes');
         test.assertField('choice', null, 'Tester.assertField() works as expected with radios');
-        test.assertField('topic', '', 'Tester.assertField() works as expected with selects');
+        test.assertField('topic', 'foo', 'Tester.assertField() works as expected with selects');
         test.assertField('file', '', 'Tester.assertField() works as expected with file inputs');
         test.assertField('checklist[]', [], 'Tester.assertField() works as expected with check lists');
     }).run(function() {
@@ -102,14 +98,7 @@ casper.test.begin('Tester.assertField(): unfilled inputs', 7, function(test) {
     var fpath = fs.pathJoin(phantom.casperPath, 'README.md');
     var fileValue = 'README.md';
     if (phantom.casperEngine === 'phantomjs') {
-        if (utils.matchEngine({
-            name: 'phantomjs',
-            version: {min: '2.0.0', max: '2.0.0'}
-        })) {
-            fileValue = '';
-        } else {
-            fileValue = 'C:\\fakepath\\README.md'; // phantomjs/webkit sets that;
-        }
+        fileValue = 'C:\\fakepath\\README.md'; // phantomjs/webkit sets that;
     }
 
     casper.start('tests/site/form.html', function() {

@@ -7,7 +7,7 @@ Writing CasperJS modules
 
 As of 1.1, CasperJS relies on PhantomJS' native ``require()`` function internally though it had to be patched in order to allow requiring casper modules using their full name, eg. ``require('casper')``.
 
-So if you plan to write your own modules and use casperjs' ones from them, be sure to call the ``patchRequire()`` function::
+So if you plan to write your own modules and uses casperjs' ones from them, be sure to call the ``patchRequire()`` function::
 
     // my module, stored in universe.js
     // patching phantomjs' require()
@@ -22,14 +22,7 @@ So if you plan to write your own modules and use casperjs' ones from them, be su
 
 .. warning::
 
-    When using CoffeeScript ``global.require`` must be passed to ``patchRequire()`` instead of just ``require``::
-
-        require = patchRequire global.require
-
-        utils = require 'utils'
-        magic = 42
-        exports.answer = ->
-          utils.format "it's ${magic}"
+    When using CoffeeScript ``global.require`` must be passed to ``patchRequire()`` instead of just ``require``.
 
 From your root casper script::
 
@@ -40,8 +33,8 @@ From your root casper script::
 
 .. hint::
 
-    CasperJS allows using nodejs modules installed through npm_. Note that since CasperJS uses it's own JavaScript environment, npm modules that use node-specific features will not work under CasperJS.
-
+    Like PhantomJS, CasperJS allows using nodejs modules installed through npm_.
+   
 As an example, let's install the underscore_ library:
 
 .. _npm: https://npmjs.org/
@@ -50,10 +43,10 @@ As an example, let's install the underscore_ library:
 .. code-block:: text
 
     $ npm install underscore
-
-
+    
+    
 Then, ``require`` it like you would with any other nodejs compliant module::
-
+   
     //npm-underscore-test.js
     var _ = require('underscore');
     var casper = require('casper').create();
@@ -62,22 +55,22 @@ Then, ``require`` it like you would with any other nodejs compliant module::
       'http://docs.casperjs.org/',
       'http://google.com/'
     ]);
-
+    
     casper.start().eachThen(urls, function(response) {
       this.thenOpen(response.data, function(response) {
         this.echo(this.getTitle());
       });
     });
-
+    
     casper.run();
-
-
-Finally, you’ll probably get something like this:
-
+    
+    
+Finaly, you’ll probably get something like this:
+    
 .. code-block:: text
 
     $ casperjs npm-underscore-test.js
     Google
     CasperJS documentation | CasperJS 1.1.0-DEV documentation
-
-
+    
+    

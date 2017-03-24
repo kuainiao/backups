@@ -10,8 +10,6 @@ FAQ
    :local:
    :backlinks: top
 
-.. _faq_node:
-
 .. index:: Node.js
 
 Is CasperJS a `node.js <http://nodejs.org/>`_ library?
@@ -30,8 +28,8 @@ I'm stuck! I think there's a bug! What can I do?
 Before rage-tweeting:
 
 1. Read the `docs <http://casperjs.org/>`_
-2. Check if an `issue <https://github.com/casperjs/casperjs/issues>`_ has been open about your problem already
-3. Check you're running the `latest stable tag <https://github.com/casperjs/casperjs/tags>`_
+2. Check if an `issue <https://github.com/n1k0/casperjs/issues>`_ has been open about your problem already
+3. Check you're running the `latest stable tag <https://github.com/n1k0/casperjs/tags>`_
 4. Check you're running the `latest version <http://code.google.com/p/phantomjs/downloads/list>`_ of PhantomJS_
 5. Ask on the `project mailing list <https://groups.google.com/forum/#!forum/casperjs>`_:
 
@@ -39,7 +37,7 @@ Before rage-tweeting:
    b. compare casperjs results with native phantomjs ones
    c. if the problem also occurs with native phantomjs, ask on `phantomjs mailing list <https://groups.google.com/forum/#!forum/phantomjs>`_
 
-6. Eventually, `file an issue <https://github.com/casperjs/casperjs/issues/new>`_.
+6. Eventually, `file an issue <https://github.com/n1k0/casperjs/issues/new>`_.
 
 
 .. index:: Testing
@@ -63,7 +61,7 @@ Also, don't forget that CasperJS supports a `CommonJS-compliant module pattern <
 
 .. note::
 
-    CasperJS' implementation of ``require()`` differs a bit from the one provided by PhantomJS_, but I personally never encountered any functional difference.
+    CasperJS' implementation of ``require()`` differs a bit from the one provided by PhantomJS_, but I personnaly never really encountered any functional difference.
 
 
 .. index:: Versionning
@@ -97,7 +95,7 @@ A first solution is to inject it into the remote DOM environment by hand using t
 
     casper.page.injectJs('/path/to/jquery.js');
 
-In the event that you require jQuery being available on every page, you can make use of the ``clientScripts`` option of CasperJS::
+If you need jQuery being available everytime, you can also make it being injected in every received response by setting the ``clientScripts`` option of CasperJS::
 
     var casper = require('casper').create({
         clientScripts: ["includes/jquery.min.js"]
@@ -189,7 +187,7 @@ Nowhere. CasperJS doesn't write logs on the filesystem. You have to implement th
 What's this mysterious ``__utils__`` object?
 --------------------------------------------
 
-The ``__utils__`` object is actually a :ref:`ClientUtils object <clientutils_prototype>` which have been automatically injected into the page DOM and is therefore always available.
+The ``__utils__`` object is actually a :ref:`ClientUtils object <clientutils_prototype>` which have been automatically injected into the page DOM and is therefore alway available.
 
 So everytime to perform an :ref:`evaluate() <casper_evaluate>` call, you have this instance available to perform common operation like:
 
@@ -339,9 +337,9 @@ Why can't I create a new `casper` instance in a test environment?
 
 The `casperjs test` :ref:`subcommand <test_subcomand>` is a convenient utility which bootstraps and configures a :ref:`test environment <testing>` for you, so a preconfigured `casper` object is already available in your test script when using this command.
 
-As of 1.1-beta3, you're prevented from overriding this preconfigured instance as this practice prevents the test runner from working properly. If you try to create a new casper instance in a test script, you'll get an error and CasperJS will exit with an error message with a link pointing to the documentation.
+As of 1.1-beta3, you're prevented to override this preconfigured instance at this practice prevents the test runner to work properly. If you try to create a new casper instance in a test script, you'll get an error and CasperJS will exit with an error message with a link pointing to the documentation.
 
-One may argue this is mostly related to some historical bad design decisions, and this might be true. This behavior is not likely to exist anymore in a future 2.0.
+One may argue this is mostly related to some hostorical bad design decision, and she might be true. This behavior is not likely exist anymore in a future 2.0.
 
 .. _faq_javascript:
 
@@ -360,43 +358,3 @@ Here are some great resources to get started efficiently with the language:
 .. _PhantomJS: http://phantomjs.org/
 .. _Qt: http://qt.digia.com/
 .. _WebKit: http://www.webkit.org/
-
-How do I use PhantomJS page module API in casperjs?
----------------------------------------------------
-
-After casperjs.start(), you have phantomjs page module available in casper.page (http://docs.casperjs.org/en/latest/modules/casper.html#page)
-
-You can simply do like below::
-
-  casper.page.nameOfMethod()
-
-PhantomJS Web Page API: http://phantomjs.org/api/webpage/
-
-
-How do I provide my implementation of a remote resource?
---------------------------------------------------------
-
-Using phantomjs native `onResourceRequested` event, you can override remote resource url to your own implementation. Your own implementation file can be provided from local path too::
-
-  casper.page.onResourceRequested = function(requestData, networkRequest) {
-     var match = requestData.url.match(/wordfamily.js/g);
-     if (match != null) {
-        console.log('Request (#' + requestData.id + '): ' + JSON.stringify(requestData));
-
-        // overrides wordfamily.js to local newWordFamily.js
-        networkRequest.changeUrl('newWordFamily.js');
-     }
-  };
-
-I'm getting intermittent test failure, what can I do to fix them?
------------------------------------------------------------------
-
-This is probably because you are executing a test before the resource or element is available and the page is fully loaded/rendered.  This can even happen on things like modals and dynamic content.
-
-You can solve this problem by using the `wait*` operations::
-
-  casper.thenOpen(url, function initialAppearance() {
-    casper.waitForText('Text in deep part of page or modal');
-  });
-
-It is good practice to wait for DOM nodes, text, or resources before beginning your tests.  It will help make them stable and predictable while still running fast.

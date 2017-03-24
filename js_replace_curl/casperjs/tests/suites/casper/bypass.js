@@ -1,12 +1,11 @@
-/*eslint strict:0*/
-casper.test.begin('Casper.bypass() can bypass a step', 2, function(test) {
+/*global casper*/
+/*jshint strict:false*/
+casper.test.begin('Casper.bypass() can bypass a step', 1, function(test) {
     casper.start();
     casper.then(function(){
         test.fail("This test should not be executed.");
     });
-    casper.once("step.bypassed", function(step) {
-        test.pass("step.bypassed event has been catched");
-    }).bypass(1).run(function() {
+    casper.bypass(1).run(function() {
         test.pass("Step has been bypassed");
         test.done();
     });
@@ -105,3 +104,4 @@ casper.test.begin('Casper.thenBypassUnless()', 3, function(test) {
         test.done();
     });
 });
+

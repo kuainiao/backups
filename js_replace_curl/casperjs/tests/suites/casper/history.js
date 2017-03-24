@@ -1,4 +1,5 @@
-/*eslint strict:0*/
+/*global casper*/
+/*jshint strict:false*/
 casper.test.begin('handling navigation history', 4, function(test) {
     casper.start('tests/site/page1.html');
     casper.thenOpen('tests/site/page2.html');

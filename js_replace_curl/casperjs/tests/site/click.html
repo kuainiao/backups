@@ -20,21 +20,17 @@
                     test3: false,
                     test4: false,
                     test5: [],
-                    test6: false,
-                    test7: false,
+	                test6: false,
+	                test7: false,
                     testdown:        [],
                     testup:          [],
                     testmove:        [],
                     testclick:       [],
-                    testdoubleclick: [],
-                    testrightclick:  []
+                    testdoubleclick: []
                 };
                 document.querySelector('#test4').onclick = function(event) {
                     results.test4 = true;
                     event.preventDefault();
-                };
-                document.querySelector('#test5').onclick = function(event) {
-                    results.testclick = [event.clientX, event.clientY];
                 };
                 window.onmousedown = function(event) {
                     results.testdown = [event.clientX, event.clientY];
@@ -48,9 +44,6 @@
                 window.ondblclick = function(event) {
                     results.testdoubleclick = [event.clientX, event.clientY];
                 };
-                window.oncontextmenu = function(event) {
-                   results.testrightclick = [event.clientX, event.clientY];
-                };
                 var test5elem = document.querySelector('#test5');
                 test5elem.addEventListener('mousedown', function(event) {
                     results.test5.push('mousedown');
@@ -58,20 +51,14 @@
                 test5elem.addEventListener('mouseup', function(event) {
                     results.test5.push('mouseup');
                 });
-                test5elem.addEventListener('click', function(event) {
-                    results.test5.push('click');
-                });
-                test5elem.addEventListener('contextmenu', function (event) {
-                    results.test5.push('contextmenu');
-                });
-                document.querySelector('#test6').onclick = function(event) {
-                    results.test6 = true;
-                    event.preventDefault();
-                };
-                document.querySelector('#test7').onclick = function(event) {
-                    results.test7 = true;
-                    event.preventDefault();
-                };
+	            document.querySelector('#test6').onclick = function(event) {
+		            results.test6 = true;
+		            event.preventDefault();
+	            };
+	            document.querySelector('#test7').onclick = function(event) {
+		            results.test7 = true;
+		            event.preventDefault();
+	            };
             })(window);
         </script>
     </body>

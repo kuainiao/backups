@@ -6,9 +6,9 @@
 Using the command line
 ======================
 
-CasperJS ships with a built-in command line parser on top of PhantomJS' parser, located in the ``cli`` module. It exposes passed arguments as **positional ones** and **named options**
+CasperJS ships with a built-in command line parser on top of PhantomJS' one, located in the ``cli`` module; it exposes passed arguments as **positional ones** and **named options**
 
-A ``Casper`` instance always contains a ready-to-use ``cli`` property for easy access to these parameters, so you don't have to worry about manipulating the ``cli`` module parsing API.
+But no worries for manipulating the ``cli`` module parsing API, a ``Casper`` instance always contains a ready to use ``cli`` property, allowing easy access of all these parameters.
 
 Let's consider this simple casper script::
 
@@ -72,10 +72,6 @@ Execution results:
 
 .. hint::
 
-   You may need to wrap an option containing a space with escaped double quotes in Windows. --foo=\\"space bar\\"
-
-.. hint::
-
    What if you want to check if any arg or option has been passed to your script? Here you go::
 
        // removing default options passed by the Python executable
@@ -95,16 +91,16 @@ Execution results:
 
 The `casperjs` command has three available options:
 
-- ``--direct``: to print out log messages to the console
+- ``--direct``: to prints out log messages to the console
 - ``--log-level=[debug|info|warning|error]`` to set the :ref:`logging level <logging>`
 - ``--engine=[phantomjs|slimerjs]`` to select the browser engine you want to use. CasperJS
-  supports PhantomJS (default) that runs Webkit, and SlimerJS that runs Gecko.
+   supports PhantomJS (default) that runs Webkit, and SlimerJS that runs Gecko.
 
 .. warning::
 
    .. deprecated:: 1.1
 
-   The ``--direct`` option has been renamed to ``--verbose``. Although ``--direct`` will still work, it is now considered deprecated.
+   ``--direct`` option has been renamed to ``--verbose``, though ``--direct`` will still works, while is to be considered deprecated.
 
 Example:
 
@@ -112,7 +108,7 @@ Example:
 
     $ casperjs --verbose --log-level=debug myscript.js
 
-Last but not least, you can still use all PhantomJS standard CLI options as you would do with any other PhantomJS script:
+Last but not least, you can still use all PhantomJS standard CLI options as you would do with any other phantomjs script:
 
 .. code-block:: text
 
@@ -120,7 +116,7 @@ Last but not least, you can still use all PhantomJS standard CLI options as you 
 
 .. hint::
 
-   To remember what the native PhantomJS cli options are available, run the ``phantomjs --help`` command.
+   To remember what the native phantomjs available cli options are, run the ``phantomjs --help`` command.
    SlimerJS supports almost same options as PhantomJS.
 
 .. index:: Raw values
@@ -148,7 +144,7 @@ If you run this script:
 
 As you can see, the ``01234567`` value has been cast to a *Number*.
 
-If you want the original string, use the ``raw`` property of the ``cli`` object, which contains the raw values of the passed parameters::
+Sometimes, you just want the original string; then you can use the ``raw`` property of the ``cli`` object, which contains the raw values passed parameters::
 
     var casper = require('casper').create();
     var utils = require('utils');

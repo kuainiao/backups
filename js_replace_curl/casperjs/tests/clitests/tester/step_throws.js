@@ -1,4 +1,4 @@
-/*eslint strict:0*/
+/*jshint strict:false*/
 casper.test.begin('step throws', 1, function(test) {
     casper.start();
     casper.then(function() {

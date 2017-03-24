@@ -2,7 +2,7 @@
  * Casper is a navigation utility for PhantomJS.
  *
  * Documentation: http://casperjs.org/
- * Repository:    http://github.com/casperjs/casperjs
+ * Repository:    http://github.com/n1k0/casperjs
  *
  * Copyright (c) 2011-2012 Nicolas Perriault
  *
@@ -50,20 +50,22 @@ exports.Stack = Stack;
 Stack.prototype = [];
 
 /**
- * Cleans the stack from any closed popups.
+ * Cleans the stack from closed popup.
  *
+ * @param  WebPage  closed  Closed popup page instance
  * @return Number           New stack length
  */
-Stack.prototype.clean = function clean() {
+Stack.prototype.clean = function clean(closed) {
     "use strict";
-    var self = this;
-
+    var closedIndex = -1;
     this.forEach(function(popup, index) {
-        // window references lose the parent attribute when they are no longer valid
-        if (popup.parent === null || typeof popup.parent === "undefined") {
-            self.splice(index, 1);
+        if (closed === popup) {
+            closedIndex = index;
         }
     });
+    if (closedIndex > -1) {
+        this.splice(closedIndex, 1);
+    }
     return this.length;
 };
 
@@ -86,12 +88,6 @@ Stack.prototype.find = function find(popupInfo) {
             break;
         case "string":
             popup = this.findByURL(popupInfo);
-            break;
-        case "object":
-            popup = this.findByUrlNameTitle(popupInfo);
-            break;
-        case "number":
-            popup = this.findByIndex(popupInfo);
             break;
         case "qtruntimeobject": // WebPage
             popup = popupInfo;
@@ -128,23 +124,6 @@ Stack.prototype.findByRegExp = function findByRegExp(regexp) {
 };
 
 /**
- * Finds the first popup matching a given title.
- *
- * @param  String  url  The child WebPage title
- * @return WebPage
- */
-Stack.prototype.findByTitle = function findByTitle(string) {
-    "use strict";
-    var popup = this.filter(function(popupPage) {
-        return popupPage.title.indexOf(string) !== -1;
-    })[0];
-    if (!popup) {
-        throw new CasperError(f("Couldn't find popup with title containing '%s'", string));
-    }
-    return popup;
-};
-
-/**
  * Finds the first popup matching a given url.
  *
  * @param  String  url  The child WebPage url
@@ -157,66 +136,6 @@ Stack.prototype.findByURL = function findByURL(string) {
     })[0];
     if (!popup) {
         throw new CasperError(f("Couldn't find popup with url containing '%s'", string));
-    }
-    return popup;
-};
-
-/**
- * Finds the first popup matching a given url or name or title.
- *
- * @param  String  url  The child WebPage url or name or title
- * @return WebPage
- */
-Stack.prototype.findByUrlNameTitle = function findByUrlNameTitle(object) {
-    "use strict";
-    var popup = null;
-    try {
-        if (typeof object.url !== "undefined") {
-            popup = this.findByUrl(object.url);
-        }
-        if (!popup && typeof object.title !== "undefined") {
-            popup = this.findByTitle(object.title);
-        }
-        if (!popup && typeof object.windowName !== "undefined") {
-            popup = this.findByWindowName(object.windowName);
-        }
-    } catch(e){}
-
-    if (!popup) {
-        throw new CasperError(f("Couldn't find popup with object '%s'", JSON.stringify(object)));
-    }
-    return popup;
-};
-
-/**
- * Finds the first popup matching a given window name.
- *
- * @param  String  url  The child WebPage window name
- * @return WebPage
- */
-Stack.prototype.findByWindowName = function findByWindowName(string) {
-    "use strict";
-    
-    var popup = this.filter(function(popupPage) {
-        return popupPage.windowName.indexOf(string) !== -1 || popupPage.windowNameBackUp.indexOf(string) !== -1;
-    })[0];
-    if (!popup) {
-        throw new CasperError(f("Couldn't find popup with name containing '%s'", string));
-    }
-    return popup;
-};
-
-/**
- * Finds the first popup matching a given index.
- *
- * @param  Number  index  The child WebPage index
- * @return WebPage
- */
-Stack.prototype.findByIndex = function findByIndex(index) {
-    "use strict";
-    var popup = this[index];
-    if (!popup) {
-        throw new CasperError(f("Couldn't find popup with index containing '%d'", index));
     }
     return popup;
 };

@@ -1,4 +1,5 @@
-/*eslint strict:0*/
+/*global casper*/
+/*jshint strict:false*/
 casper.test.begin('events', 2, function(test) {
     casper.plopped = false;
     casper.once("plop", function() {
@@ -24,21 +25,5 @@ casper.test.begin('filters', 3, function(test) {
     test.assertEquals(casper.filter("test", 1), 2, "filter() filters a value");
     test.assertEquals(casper.foo, 42, "filter() applies the correct context");
     delete casper.foo;
-    test.done();
-});
-
-casper.test.begin('events order', 2, function(test) {
-    casper.mowed = "Moo";
-    casper.on("mow", function() {
-        this.mowed = casper.mowed + " Moo";
-    });
-    casper.emit("mow");
-    test.assertEquals(casper.mowed, "Moo Moo", "mowed has the correct value");
-
-    casper.prependListener("mow", function() {
-        this.mowed = this.mowed + " Boo";
-    });
-    casper.emit("mow");
-    test.assertEquals(casper.mowed, "Moo Moo Boo Moo", "mowed has the correct value");
     test.done();
 });

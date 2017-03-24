@@ -1,4 +1,5 @@
-/*eslint strict:0, max-params:0*/
+/*global casper*/
+/*jshint strict:false, maxparams:99*/
 casper.test.begin('mapping argument context', 1, function(test) {
     casper.start();
     var context = {
@@ -50,7 +51,7 @@ casper.test.begin('handling of object context (BC mode)', 3, function(test) {
 casper.test.begin('handling of array context', 3, function(test) {
     casper.start();
     test.assertEquals(casper.evaluate(function(a) {
-        return a;
+        return [a];
     }, ["foo"]), ["foo"], 'Casper.evaluate() accepts an array as arguments context');
     test.assertEquals(casper.evaluate(function(a, b) {
         return [a, b];
@@ -77,7 +78,7 @@ casper.test.begin('natural arguments context (phantomjs equivalent)', 3, functio
 
 casper.test.begin('thenEvaluate() tests', 2, function(test) {
     casper.start().thenEvaluate(function(a, b) {
-        window.a = a;
+        window.a = a
         window.b = b;
     }, "foo", "bar");
     casper.then(function() {
@@ -90,7 +91,7 @@ casper.test.begin('thenEvaluate() tests', 2, function(test) {
     });
 });
 
-// https://github.com/casperjs/casperjs/issues/489
+// https://github.com/n1k0/casperjs/issues/489
 // https://groups.google.com/forum/?fromgroups=#!topic/casperjs/95IgDMFnEKM
 casper.test.begin("evaluate() returns a value which can be altered", 1, function(test) {
     var list;
@@ -107,24 +108,5 @@ casper.test.begin("evaluate() returns a value which can be altered", 1, function
 
     casper.run(function() {
         test.done();
-    });
-});
-
-// https://github.com/casperjs/casperjs/issues/841
-casper.test.begin("evaluate() with js disabled, throws error", 1, function(test) {
-    casper.options.pageSettings.javascriptEnabled = false;
-    casper.start().then(function() {
-        function getListResult() {
-            return this.evaluate(function() {
-                return [{a: 1}, {b: 2}];
-        });
-        }
-        test.assertThrows(getListResult, undefined,
-            "Casper.evaluate() raises an error if JavaScript is disabled in the page");
-    });
-
-    casper.run(function() {
-        test.done();
-        casper.options.pageSettings.javascriptEnabled = true;
     });
 });

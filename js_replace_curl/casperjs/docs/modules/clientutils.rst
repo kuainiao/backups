@@ -30,7 +30,7 @@ Just drag the following link onto your favorites toobar; when clicking it, a ``_
 .. raw:: html
 
     <div class="bookmarklet">
-        <a href="javascript:(function(){void(function(){if(!document.getElementById('CasperUtils')){var%20CasperUtils=document.createElement('script');CasperUtils.id='CasperUtils';CasperUtils.src='https://rawgit.com/casperjs/casperjs/master/modules/clientutils.js';document.documentElement.appendChild(CasperUtils);var%20interval=setInterval(function(){if(typeof%20ClientUtils==='function'){window.__utils__=new%20window.ClientUtils();clearInterval(interval);}},50);}}());})();">CasperJS Utils</a>
+        <a href="javascript:(function(){void(function(){if(!document.getElementById('CasperUtils')){var%20CasperUtils=document.createElement('script');CasperUtils.id='CasperUtils';CasperUtils.src='https://raw.github.com/n1k0/casperjs/master/modules/clientutils.js';document.documentElement.appendChild(CasperUtils);var%20interval=setInterval(function(){if(typeof%20ClientUtils==='function'){window.__utils__=new%20window.ClientUtils();clearInterval(interval);}},50);}}());})();">CasperJS Utils</a>
     </div>
 
 .. note::
@@ -109,7 +109,7 @@ Retrieves all DOM elements matching a given :ref:`selector expression <selectors
     casper.start('http://foo.bar/', function() {
         links = this.evaluate(function() {
             var elements = __utils__.findAll('a.menu');
-            return elements.map(function(e) {
+            return Array.prototype.forEach.call(elements, function(e) {
                 return e.getAttribute('href');
             });
         });
@@ -135,26 +135,7 @@ Retrieves a single DOM element by a :ref:`selector expression <selectors>`::
 
     casper.run(function() {
         this.echo(href).exit();
-    });    
-    
-``forceTarget()``
--------------------------------------------------------------------------------
-
-**Signature:** ``forceTarget(String selector, String target)``
-
-Force the engine to use another target instead of the one provided. Very useful to limit the number of open windows and reduce memory consumption::
-
-    casper.start('http://foo.bar/', function() {
-        var href = this.evaluate(function() {
-            return __utils__.forceTarget('#my_id', '_self').click();
-        });
-        this.echo(href);
     });
-
-    casper.run(function() {
-        this.exit();
-    });
-        
 
 .. index:: Base64
 
@@ -214,26 +195,6 @@ Retrieves current document height::
     });
 
     casper.run();
-    
-``getDocumentWidth()``
--------------------------------------------------------------------------------
-
-**Signature:** ``getDocumentWidth()``
-
-.. versionadded:: 1.0
-
-Retrieves current document width::
-
-    var documentHeight;
-
-    casper.start('http://google.com/', function() {
-        documentWidth = this.evaluate(function() {
-            return __utils__.getDocumentWidth();
-        });
-        this.echo('Document width is ' + documentWidth + 'px');
-    });
-
-    casper.run();    
 
 ``getElementBounds()``
 -------------------------------------------------------------------------------
@@ -292,7 +253,7 @@ The ``scope`` argument allows to set the context for executing the XPath query.
 ``getFieldValue()``
 -------------------------------------------------------------------------------
 
-**Signature:** ``getFieldValue(String selector[, HTMLElement scope])``
+**Signature:** ``getFieldValue(String inputName[, Object options])``
 
 .. versionadded:: 1.0
 
@@ -306,9 +267,11 @@ Retrieves the value from the field named against the ``inputNamed`` argument:
 
 Using the ``getFieldValue()`` method for ``plop``::
 
-    __utils__.getFieldValue('[name="plop"]'); // 42
+    __utils__.getFieldValue('plop'); // 42
 
 Options:
+
+- ``formSelector``: allows to set the selector for the form containing the target field.
 
 .. index:: Form
 
@@ -346,51 +309,14 @@ Logs a message with an optional level. Will format the message a way CasperJS wi
         __utils__.log("We've got a problem on client side", 'error');
     });
 
-
-``makeSelector()``
------------------------------------------------------------------------------
-
-**Signature:** ``makeSelector(String selector [, String type])``
-
-.. versionadded:: 1.1-beta5
-
-Makes selector by defined type XPath, Name or Label. Function has same result as selectXPath in Casper module for XPath type - it makes XPath object. Function also accepts name attribute of the form field or can select element by its label text.
-
-Parameter ``type`` values:
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-- 'css'
-   
-  CSS3 selector - selector is returned transparently
-   
-- 'xpath' || null
-    
-  XPath selector - return XPath object    
-
-- 'name' || 'names'
- 
-  select input of specific name, internally covert to CSS3 selector
-
-- 'label' || 'labels'
- 
-  select input of specific label, internally converted into XPath selector. As selector is label's text used
-   
-Examples::
-
-    __utils__.makeSelector('//li[text()="blah"]', 'xpath'); // return {type: 'xpath', path: '//li[text()="blah"]'}
-    __utils__.makeSelector('parameter', 'name'); // return '[name="parameter"]'
-    __utils__.makeSelector('My label', 'label'); // return {type: 'xpath', path: '//*[@id=string(//label[text()="My label"]/@for)]'}
-
-
-
 ``mouseEvent()``
 -------------------------------------------------------------------------------
 
-**Signature:** ``mouseEvent(String type, String selector, [Number|String X, Number|String Y])``
+**Signature:** ``mouseEvent(String type, String selector)``
 
 Dispatches a mouse event to the DOM element behind the provided selector.
 
-Supported events are ``mouseup``, ``mousedown``, ``click``, ``dblclick``, ``mousemove``, ``mouseover``, ``mouseout``, ``mouseenter``, ``mouseleave`` and ``contextmenu``::
+Supported events are ``mouseup``, ``mousedown``, ``click``, ``mousemove``, ``mouseover`` and ``mouseout``.
 
 .. index:: XPath
 
@@ -416,7 +342,7 @@ Sends an AJAX request, using the following parameters:
 - ``method``: The HTTP method (default: ``GET``).
 - ``data``: Request parameters (default: ``null``).
 - ``async``: Flag for an asynchroneous request? (default: ``false``)
-- ``settings``: Custom Headers when perform the AJAX request (default: ``null``). WARNING: an invalid header here may make the request fail silently.
+- ``settings``: Other settings when perform the AJAX request (default: ``null``)
 
 .. warning::
 
@@ -433,30 +359,6 @@ Sends an AJAX request, using the following parameters:
        casper.then(function() {
            require('utils').dump(data);
        });
-
-``setFieldValue()``
------------------------------------------------------------------------------
-
-**Signature:** ``setFieldValue(String|Object selector, Mixed value [, HTMLElement scope])``
-
-.. versionadded:: 1.1-beta5
-
-Sets a value to form field by CSS3 or XPath selector.
-With `makeSelector()`_ function can be easily used with ``name`` or ``label`` selector 
-
-Options
-~~~~~~~
-    
-- ``(String|Object) scope: selector :``
-
-  specific form scope
-
-Examples::
-
-    __utils__.setFieldValue("input[name='email']", 'chuck@norris.com');
-    __utils__.setFieldValue("input[name='email']", 'chuck@norris.com', {'formSelector': '#myform'});
-    __utils__.setFieldValue(__utils__.makeSelector('email', 'name'), 'chuck@norris.com');
-
 
 ``visible()``
 -------------------------------------------------------------------------------

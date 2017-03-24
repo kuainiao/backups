@@ -1,4 +1,4 @@
-/*eslint strict:0*/
+/*jshint strict:false*/
 /*global CasperError, casper, console, phantom, require*/
 /**
  * Google sample testing.

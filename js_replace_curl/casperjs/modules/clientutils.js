@@ -2,7 +2,7 @@
  * Casper is a navigation utility for PhantomJS.
  *
  * Documentation: http://casperjs.org/
- * Repository:    http://github.com/casperjs/casperjs
+ * Repository:    http://github.com/n1k0/casperjs
  *
  * Copyright (c) 2011-2012 Nicolas Perriault
  *
@@ -28,7 +28,7 @@
  *
  */
 
-/*global escape, NodeList*/
+/*global console, escape, exports, NodeList, window*/
 
 (function(exports) {
     "use strict";
@@ -41,10 +41,10 @@
      * Casper client-side helpers.
      */
     exports.ClientUtils = function ClientUtils(options) {
-        /*eslint max-statements:0, no-multi-spaces:0*/
+        /*jshint maxstatements:40*/
         // private members
         var BASE64_ENCODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-        var BASE64_DECODE_CHARS = [
+        var BASE64_DECODE_CHARS = new Array(
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63,
@@ -53,20 +53,8 @@
             15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1,
             -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
             41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1
-        ];
+        );
         var SUPPORTED_SELECTOR_TYPES = ['css', 'xpath'];
-        var XPATH_NAMESPACE = {
-            svg: 'http://www.w3.org/2000/svg',
-            mathml: 'http://www.w3.org/1998/Math/MathML'
-        };
-
-        function form_urlencoded(str) {
-            return encodeURIComponent(str)
-                    .replace(/%20/g, '+')
-                    .replace(/[!'()*]/g, function(c) {
-                        return '%' + c.charCodeAt(0).toString(16);
-                    });
-        }
 
         // public members
         this.options = options || {};
@@ -95,12 +83,10 @@
          * Clicks on the DOM element behind the provided selector.
          *
          * @param  String  selector  A CSS3 selector to the element to click
-         * @param  {Number} x         X position
-         * @param  {Number} y         Y position
          * @return Boolean
          */
-        this.click = function click(selector, x, y) {
-            return this.mouseEvent('click', selector, x, y);
+        this.click = function click(selector) {
+            return this.mouseEvent('click', selector);
         };
 
         /**
@@ -110,7 +96,7 @@
          * @return string
          */
         this.decode = function decode(str) {
-            /*eslint max-statements:0, complexity:0 */
+            /*jshint maxstatements:30, maxcomplexity:30 */
             var c1, c2, c3, c4, i = 0, len = str.length, out = "";
             while (i < len) {
                 do {
@@ -125,18 +111,17 @@
                 if (c2 === -1) {
                     break;
                 }
-                out += String.fromCharCode(c1 << 2 | (c2 & 0x30) >> 4);
+                out += String.fromCharCode((c1 << 2) | ((c2 & 0x30) >> 4));
                 do {
                     c3 = str.charCodeAt(i++) & 0xff;
-                    if (c3 === 61) {
-                        return out;
-                    }
+                    if (c3 === 61)
+                    return out;
                     c3 = BASE64_DECODE_CHARS[c3];
                 } while (i < len && c3 === -1);
                 if (c3 === -1) {
                     break;
                 }
-                out += String.fromCharCode((c2 & 0XF) << 4 | (c3 & 0x3C) >> 2);
+                out += String.fromCharCode(((c2 & 0XF) << 4) | ((c3 & 0x3C) >> 2));
                 do {
                     c4 = str.charCodeAt(i++) & 0xff;
                     if (c4 === 61) {
@@ -147,7 +132,7 @@
                 if (c4 === -1) {
                     break;
                 }
-                out += String.fromCharCode((c3 & 0x03) << 6 | c4);
+                out += String.fromCharCode(((c3 & 0x03) << 6) | c4);
             }
             return out;
         };
@@ -163,22 +148,27 @@
         };
 
         /**
-         * Checks if a given DOM element is visible in remote page.
+         * Checks if a given DOM element is visible in remove page.
          *
          * @param  Object   element  DOM element
          * @return Boolean
          */
         this.elementVisible = function elementVisible(elem) {
-        var style;
-        try {
-            style = window.getComputedStyle(elem, null);
-        } catch (e) {
-            return false;
+            var style;
+            try {
+                style = window.getComputedStyle(elem, null);
+            } catch (e) {
+                return false;
+            }
+            var hidden = style.visibility === 'hidden' || style.display === 'none';
+            if (hidden) {
+                return false;
+            }
+            if (style.display === "inline") {
+                return true;
+            }
+            return elem.clientHeight > 0 && elem.clientWidth > 0;
         }
-            if(style.visibility === 'hidden' || style.display === 'none') return false;
-            var cr = elem.getBoundingClientRect();
-            return cr.width > 0 && cr.height > 0;
-        };
 
         /**
          * Base64 encodes a string, even binary ones. Succeeds where
@@ -188,7 +178,7 @@
          * @return string
          */
         this.encode = function encode(str) {
-            /*eslint max-statements:0 */
+            /*jshint maxstatements:30 */
             var out = "", i = 0, len = str.length, c1, c2, c3;
             while (i < len) {
                 c1 = str.charCodeAt(i++) & 0xff;
@@ -201,15 +191,15 @@
                 c2 = str.charCodeAt(i++);
                 if (i === len) {
                     out += BASE64_ENCODE_CHARS.charAt(c1 >> 2);
-                    out += BASE64_ENCODE_CHARS.charAt((c1 & 0x3) << 4 | (c2 & 0xF0) >> 4);
+                    out += BASE64_ENCODE_CHARS.charAt(((c1 & 0x3)<< 4) | ((c2 & 0xF0) >> 4));
                     out += BASE64_ENCODE_CHARS.charAt((c2 & 0xF) << 2);
                     out += "=";
                     break;
                 }
                 c3 = str.charCodeAt(i++);
                 out += BASE64_ENCODE_CHARS.charAt(c1 >> 2);
-                out += BASE64_ENCODE_CHARS.charAt((c1 & 0x3) << 4 | (c2 & 0xF0) >> 4);
-                out += BASE64_ENCODE_CHARS.charAt((c2 & 0xF) << 2 | (c3 & 0xC0) >> 6);
+                out += BASE64_ENCODE_CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4));
+                out += BASE64_ENCODE_CHARS.charAt(((c2 & 0xF) << 2) | ((c3 & 0xC0) >> 6));
                 out += BASE64_ENCODE_CHARS.charAt(c3 & 0x3F);
             }
             return out;
@@ -240,7 +230,7 @@
             var text = '', elements = this.findAll(selector);
             if (elements && elements.length) {
                 Array.prototype.forEach.call(elements, function _forEach(element) {
-                    text += element.textContent || element.innerText || element.value || '';
+                    text += element.textContent || element.innerText;
                 });
             }
             return text;
@@ -251,17 +241,15 @@
          *
          * @param  HTMLElement|String  form      A form element, or a CSS3 selector to a form element
          * @param  Object              vals      Field values
-         * @param  String              findType  Element finder type (css, names, xpath, labels)
+         * @param  Function            findType  Element finder type (css, names, xpath)
          * @return Object                        An object containing setting result for each field, including file uploads
          */
         this.fill = function fill(form, vals, findType) {
-            findType = findType || "names";
-
-            /*eslint complexity:0*/
+            /*jshint maxcomplexity:8*/
             var out = {
                 errors: [],
                 fields: [],
-                files: []
+                files:  []
             };
 
             if (!(form instanceof HTMLElement) || typeof form === "string") {
@@ -281,26 +269,41 @@
                 return out;
             }
 
+            var finders = {
+                css: function(inputSelector, formSelector) {
+                    return this.findAll(inputSelector, form);
+                },
+                names: function(elementName, formSelector) {
+                    return this.findAll('[name="' + elementName + '"]', form);
+                },
+                xpath: function(xpath, formSelector) {
+                    return this.findAll({type: "xpath", path: xpath}, form);
+                }
+            };
+
             for (var fieldSelector in vals) {
                 if (!vals.hasOwnProperty(fieldSelector)) {
                     continue;
                 }
+                var field = finders[findType || "names"].call(this, fieldSelector, form),
+                    value = vals[fieldSelector];
+                if (!field || field.length === 0) {
+                    out.errors.push('no field matching ' + findType + ' selector "' + fieldSelector + '" in form');
+                    continue;
+                }
                 try {
-                    out.fields[fieldSelector] = this.setFieldValue(this.makeSelector(fieldSelector, findType), vals[fieldSelector], form);
+                    out.fields[fieldSelector] = this.setField(field, value);
                 } catch (err) {
-                    switch (err.name) {
-                        case "FieldNotFound":
-                            out.errors.push('Unable to find field element in form: ' + err.toString());
-                        break;
-                        case "FileUploadError":
-                            out.files.push({
-                                type: findType,
-                                selector: findType === "labels" ? '#' + err.id : fieldSelector,
-                                path: err.path
-                            });
-                        break;
-                        default:
-                            out.errors.push(err.toString());
+                    if (err.name === "FileUploadError") {
+                        out.files.push({
+                            type: findType,
+                            selector: fieldSelector,
+                            path: err.path
+                        });
+                    } else if (err.name === "FieldNotFound") {
+                        out.errors.push('Unable to find field element in form: ' + err.toString());
+                    } else {
+                        out.errors.push(err.toString());
                     }
                 }
             }
@@ -310,12 +313,12 @@
         /**
          * Finds all DOM elements matching by the provided selector.
          *
-         * @param  String | Object   selector  CSS3 selector (String only) or XPath object
+         * @param  String            selector  CSS3 selector
          * @param  HTMLElement|null  scope     Element to search child elements within
          * @return Array|undefined
          */
         this.findAll = function findAll(selector, scope) {
-            scope = scope instanceof HTMLElement ? scope : scope && this.findOne(scope) || this.options.scope;
+            scope = scope || this.options.scope;
             try {
                 var pSelector = this.processSelector(selector);
                 if (pSelector.type === 'xpath') {
@@ -331,12 +334,12 @@
         /**
          * Finds a DOM element by the provided selector.
          *
-         * @param  String | Object   selector  CSS3 selector (String only) or XPath object
+         * @param  String            selector  CSS3 selector
          * @param  HTMLElement|null  scope     Element to search child elements within
          * @return HTMLElement|undefined
          */
         this.findOne = function findOne(selector, scope) {
-            scope = scope instanceof HTMLElement ? scope : scope && this.findOne(scope) || this.options.scope;
+            scope = scope || this.options.scope;
             try {
                 var pSelector = this.processSelector(selector);
                 if (pSelector.type === 'xpath') {
@@ -347,25 +350,6 @@
             } catch (e) {
                 this.log('findOne(): invalid selector provided "' + selector + '":' + e, "error");
             }
-        };
-
-        /**
-         * Force target on <FORM> and <A> tag.
-         *
-         * @param  String     selector  CSS3 selector
-         * @param  String     A HTML target '_blank','_self','_parent','_top','framename'
-         * @return Boolean
-         */
-        this.forceTarget = function forceTarget(selector, target) {
-            var elem = this.findOne(selector);
-            while (!!elem && elem.tagName !== 'A' &&  elem.tagName !== 'FORM' && elem.tagName !== 'BODY'){
-                elem = elem.parentNode;
-            }
-            if (elem === 'A' || elem === 'FORM') {
-                elem.setAttribute('target', target);
-                return true;
-            }
-            return false;
         };
 
         /**
@@ -392,44 +376,16 @@
          */
         this.getBinary = function getBinary(url, method, data) {
             try {
-                return this.sendAJAX(url, method, data, false, {
-                    overrideMimeType: "text/plain; charset=x-user-defined"
-                });
+                return this.sendAJAX(url, method, data, false);
             } catch (e) {
                 if (e.name === "NETWORK_ERR" && e.code === 101) {
-                    this.log("getBinary(): Unfortunately, casperjs cannot make"
-                        + " cross domain ajax requests", "warning");
+                    this.log("getBinary(): Unfortunately, casperjs cannot make cross domain ajax requests", "warning");
                 }
                 this.log("getBinary(): Error while fetching " + url + ": " + e, "error");
                 return "";
             }
         };
 
-
-        /**
-         * Convert a Xpath or a css Selector into absolute css3 selector
-         *
-         * @param  String|Object     selector    CSS3/XPath selector
-         * @param  HTMLElement|null  scope       Element to search child elements within
-         * @param  String            limit       Parent limit NodeName
-         * @return String
-         */
-
-        this.getCssSelector = function getCssSelector(selector, scope, limit) {
-            scope = scope || this.options.scope;
-            limit = limit || 'BODY';
-            var elem = this.findOne(selector, scope);
-            if (!!elem) {
-                var str = "";
-                while (elem.nodeName.toUpperCase() !== limit.toUpperCase()) {
-                    str = "> " + elem.nodeName + ':nth-child(' + ([].indexOf.call(elem.parentNode.children, elem) + 1) + ') ' + str;
-                    elem = elem.parentNode;
-                }
-                return str.substring(2);
-            }
-            return this.findOne(selector).nodeName;
-        };
-        
         /**
          * Retrieves total document height.
          * http://james.padolsey.com/javascript/get-document-height-cross-browser/
@@ -441,20 +397,6 @@
                 Math.max(document.body.scrollHeight, document.documentElement.scrollHeight),
                 Math.max(document.body.offsetHeight, document.documentElement.offsetHeight),
                 Math.max(document.body.clientHeight, document.documentElement.clientHeight)
-            );
-        };
-
-        /**
-         * Retrieves total document width.
-         * http://james.padolsey.com/javascript/get-document-width-cross-browser/
-         *
-         * @return {Number}
-         */
-        this.getDocumentWidth = function getDocumentWidth() {
-            return Math.max(
-                Math.max(document.body.scrollWidth, document.documentElement.scrollWidth),
-                Math.max(document.body.offsetWidth, document.documentElement.offsetWidth),
-                Math.max(document.body.clientWidth, document.documentElement.clientWidth)
             );
         };
 
@@ -471,9 +413,9 @@
             try {
                 var clipRect = this.findOne(selector).getBoundingClientRect();
                 return {
-                    top: clipRect.top,
-                    left: clipRect.left,
-                    width: clipRect.width,
+                    top:    clipRect.top,
+                    left:   clipRect.left,
+                    width:  clipRect.width,
                     height: clipRect.height
                 };
             } catch (e) {
@@ -494,13 +436,14 @@
          */
         this.getElementsBounds = function getElementsBounds(selector) {
             var elements = this.findAll(selector);
+            var self = this;
             try {
                 return Array.prototype.map.call(elements, function(element) {
                     var clipRect = element.getBoundingClientRect();
                     return {
-                        top: clipRect.top,
-                        left: clipRect.left,
-                        width: clipRect.width,
+                        top:    clipRect.top,
+                        left:   clipRect.left,
+                        width:  clipRect.width,
                         height: clipRect.height
                     };
                 });
@@ -574,7 +517,7 @@
          */
         this.getElementByXPath = function getElementByXPath(expression, scope) {
             scope = scope || this.options.scope;
-            var a = document.evaluate(expression, scope, this.xpathNamespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+            var a = document.evaluate(expression, scope, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
             if (a.snapshotLength > 0) {
                 return a.snapshotItem(0);
             }
@@ -590,7 +533,7 @@
         this.getElementsByXPath = function getElementsByXPath(expression, scope) {
             scope = scope || this.options.scope;
             var nodes = [];
-            var a = document.evaluate(expression, scope, this.xpathNamespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+            var a = document.evaluate(expression, scope, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
             for (var i = 0; i < a.snapshotLength; i++) {
                 nodes.push(a.snapshotItem(i));
             }
@@ -598,126 +541,84 @@
         };
 
         /**
-         * Build the xpath namespace resolver to evaluate on document
-         *
-         * @param String        prefix   The namespace prefix
-         * @return the resolve namespace or null
-         */
-        this.xpathNamespaceResolver = function xpathNamespaceResolver(prefix) {
-          return XPATH_NAMESPACE[prefix] || null;
-        };
-
-        /**
-         * Retrieves the value of an element
+         * Retrieves the value of a form field.
          *
          * @param  String  inputName  The for input name attr value
          * @param  Object  options    Object with formSelector, optional
          * @return Mixed
          */
-        this.getFieldValue = function getFieldValue(selector, scope) {
-            var self = this;
-            var fields = this.findAll(selector, scope);
-            var type;
+        this.getFieldValue = function getFieldValue(inputName, options) {
+            options = options || {};
+            function getSingleValue(input) {
+                var type;
+                try {
+                    type = input.getAttribute('type').toLowerCase();
+                } catch (e) {
+                    type = 'other';
+                }
+                if (['checkbox', 'radio'].indexOf(type) === -1) {
+                    return input.value;
+                }
+                // single checkbox or… radio button (weird, I know)
+                if (input.hasAttribute('value')) {
+                    return input.checked ? input.getAttribute('value') : undefined;
+                }
+                return input.checked;
+            }
+            function getMultipleValues(inputs) {
+                var type;
+                type = inputs[0].getAttribute('type').toLowerCase();
+                if (type === 'radio') {
+                    var value;
+                    [].forEach.call(inputs, function(radio) {
+                        value = radio.checked ? radio.value : value;
+                    });
+                    return value;
+                } else if (type === 'checkbox') {
+                    var values = [];
+                    [].forEach.call(inputs, function(checkbox) {
+                        if (checkbox.checked) {
+                            values.push(checkbox.value);
+                        }
+                    });
+                    return values;
+                }
+            }
+            var formSelector = '';
+            if (options.formSelector) {
+                formSelector = options.formSelector + ' ';
+            }
+            var inputs = this.findAll(formSelector + '[name="' + inputName + '"]');
 
-            // for Backward Compatibility
-            if (!(fields instanceof NodeList || fields instanceof Array)) {
-                this.log("attempting to fetch field element from selector: '" + selector + "'", "info");
-                fields = this.findAll('[name="' + selector + '"]');
+            if (options.inputSelector) {
+                inputs = inputs.concat(this.findAll(options.inputSelector));
             }
 
-            if (fields && fields.length > 1) {
-                type = fields[0].hasAttribute('type') ? fields[0].getAttribute('type') : "other";
-                fields = [].filter.call(fields, function(elm){
-                    if (elm.nodeName.toLowerCase() === 'input' &&
-                        ['checkbox', 'radio'].indexOf(elm.getAttribute('type')) !== -1) {
-                        return elm.checked;
-                    }
-                    return true;
-                });
+            if (options.inputXPath) {
+                inputs = inputs.concat(this.getElementsByXPath(options.inputXPath));
             }
 
-            if (fields.length === 0 ) {
-                return type !== "radio" ? [] : undefined;
+            switch (inputs.length) {
+                case 0:  return undefined;
+                case 1:  return getSingleValue(inputs[0]);
+                default: return getMultipleValues(inputs);
             }
-
-            if (fields.length > 1 ) {
-                return [].map.call(fields, function(elm) {
-                    var ret = self.getField(elm);
-                    return ret && type === 'checkbox' ? elm.value : ret;
-                });
-            }
-
-            return this.getField(fields[0]);
-        };
-
-        /**
-         * Retrieves the value of a form field.
-         *
-         * @param  HTMLElement  An html element
-         * @return Mixed
-         */
-        this.getField = function getField(field) {
-            var nodeName, type;
-
-            if (!(field instanceof HTMLElement)) {
-                var error = new Error('getFieldValue: Invalid field ; only HTMLElement is supported');
-                error.name = 'FieldNotFound';
-                throw error;
-            }
-
-            nodeName = field.nodeName.toLowerCase();
-            type = field.hasAttribute('type') ? field.getAttribute('type').toLowerCase() : 'text';
-            if (nodeName === "select" && field.multiple) {
-                return [].filter.call(field.options, function(option){
-                    return !!option.selected;
-                }).map(function(option){
-                    return option.value || option.text;
-                });
-            }
-            if (type === 'radio') {
-                return field.checked ? field.value : null;
-            }
-            if (type === 'checkbox') {
-                return field.checked;
-            }
-            return field.value || '';
         };
 
         /**
          * Retrieves a given form all of its field values.
          *
-         * @param  HTMLElement|String  form      A form element, or a CSS3 selector to a form element
+         * @param  String  selector  A DOM CSS3/XPath selector
          * @return Object
          */
-        this.getFormValues = function getFormValues(form) {
+        this.getFormValues = function getFormValues(selector) {
+            var form = this.findOne(selector);
+            var values = {};
             var self = this;
-            var values = {}, checked = {};
-
-            if (!(form instanceof HTMLElement) || typeof form === "string") {
-                this.log("attempting to fetch form element from selector: '" + form + "'", "info");
-                try {
-                    form = this.findOne(form);
-                } catch (e) {
-                    this.log("invalid form selector provided: '" + form + "'");
-                    return {};
-                }
-            }
-
-            [].forEach.call(form.elements, function(elm) {
-                var name = elm.getAttribute('name');
-                var value = self.getField(elm);
-                var multi = !!value && elm.hasAttribute('type') &&
-                            elm.type === 'checkbox' ? elm.value : value;
-                if (!!name && value !== null && !(elm.type === 'checkbox' && value === false)) {
-                    if (typeof values[name] === "undefined") {
-                        values[name] = value;
-                        checked[name] = multi;
-                    } else {
-                        if (!Array.isArray(values[name])) {
-                            values[name] = [checked[name]];
-                        }
-                        values[name].push(multi);
-                    }
+            [].forEach.call(form.elements, function(element) {
+                var name = element.getAttribute('name');
+                if (name && !values[name]) {
+                    values[name] = self.getFieldValue(name, {formSelector: selector});
                 }
             });
             return values;
@@ -735,84 +636,27 @@
         };
 
         /**
-         * Makes selector by defined type XPath, Name or Label. Function has same result as selectXPath in Casper module for
-         * XPath type - it makes XPath object.
-         * Function also accepts name attribut of the form filed or can select element by its label text.
-         *
-         * @param  String selector Selector of defined type
-         * @param  String|null  type Type of selector, it can have these values:
-         *         css - CSS3 selector - selector is returned trasparently
-         *         xpath - XPath selector - return XPath object
-         *         name|names - select input of specific name, internally covert to CSS3 selector
-         *         label|labels - select input of specific label, internally covert to XPath selector. As selector is label's text used.
-         * @return String|Object
-         */
-        this.makeSelector = function makeSelector(selector, type){
-            type = type || 'xpath'; // default type
-            var ret;
-
-            if (typeof selector === "object") { // selector object (CSS3 | XPath) could by passed
-                selector = selector.path;
-            }
-
-            switch (type) {
-                case 'css': // do nothing
-                    ret = selector;
-                    break;
-                case 'name': // convert to css
-                case 'names':
-                    ret = '[name="' + selector + '"]';
-                    break;
-                case 'label': // covert to xpath object
-                case 'labels':
-                    ret = {type: 'xpath', path: '//*[@id=string(//label[text()="' + selector + '"]/@for)]'};
-                    break;
-                case 'xpath': // covert to xpath object
-                    ret = {type: 'xpath', path: selector};
-                    break;
-                default:
-                    throw new Error("Unsupported selector type: " + type);
-            }
-
-            return ret;
-        };
-
-        /**
          * Dispatches a mouse event to the DOM element behind the provided selector.
          *
-         * @param  String   type      Type of event to dispatch
-         * @param  String   selector  A CSS3 selector to the element to click
-         * @param  {Number} x         X position
-         * @param  {Number} y         Y position
+         * @param  String   type     Type of event to dispatch
+         * @param  String  selector  A CSS3 selector to the element to click
          * @return Boolean
          */
-        this.mouseEvent = function mouseEvent(type, selector, x, y) {
+        this.mouseEvent = function mouseEvent(type, selector) {
             var elem = this.findOne(selector);
-            if (!elem || ( !this.elementVisible(elem) && elem.nodeName.toUpperCase() !== "AREA")) {
-                this.log("mouseEvent(): Couldn't find any element matching '" +
-                    selector + "' selector", "error");
+            if (!elem) {
+                this.log("mouseEvent(): Couldn't find any element matching '" + selector + "' selector", "error");
                 return false;
             }
-
-            var convertNumberToIntAndPercentToFloat = function (a, def){
-                return !!a && !isNaN(a) && parseInt(a, 10) ||
-                    !!a && !isNaN(parseFloat(a)) && parseFloat(a) >= 0 &&
-                    parseFloat(a) <= 100 && parseFloat(a) / 100 ||
-                def;
-            };
             try {
                 var evt = document.createEvent("MouseEvents");
-                var px = convertNumberToIntAndPercentToFloat(x, 0.5),
-                    py = convertNumberToIntAndPercentToFloat(y, 0.5);
+                var center_x = 1, center_y = 1;
                 try {
-                    var bounds = elem.getBoundingClientRect();
-                    px = Math.floor(bounds.width  * (px - (px ^ 0)).toFixed(10)) + (px ^ 0) + bounds.left;
-                    py = Math.floor(bounds.height * (py - (py ^ 0)).toFixed(10)) + (py ^ 0) + bounds.top;
-                } catch (e) {
-                    px = 1; py = 1;
-                }
-                evt.initMouseEvent(type, true, true, window, 1, 1, 1, px, py, false, false, false, false,
-                    type !== "contextmenu" ? 0 : 2, elem);
+                    var pos = elem.getBoundingClientRect();
+                    center_x = Math.floor((pos.left + pos.right) / 2);
+                    center_y = Math.floor((pos.top + pos.bottom) / 2);
+                } catch(e) {}
+                evt.initMouseEvent(type, true, true, window, 1, 1, 1, center_x, center_y, false, false, false, false, 0, elem);
                 // dispatchEvent return value is false if at least one of the event
                 // handlers which handled this event called preventDefault;
                 // so we cannot returns this results as it cannot accurately informs on the status
@@ -873,8 +717,7 @@
          * @return Array
          */
         this.removeElementsByXPath = function removeElementsByXPath(expression) {
-            var a = document.evaluate(expression, document, null,
-                XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
+            var a = document.evaluate(expression, document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
             for (var i = 0; i < a.snapshotLength; i++) {
                 a.snapshotItem(i).parentNode.removeChild(a.snapshotItem(i));
             }
@@ -895,7 +738,7 @@
          */
         this.scrollToBottom = function scrollToBottom() {
             this.scrollTo(0, this.getDocumentHeight());
-        };
+        },
 
         /**
          * Performs an AJAX request.
@@ -904,114 +747,62 @@
          * @param   String   method   HTTP method (default: GET).
          * @param   Object   data     Request parameters.
          * @param   Boolean  async    Asynchroneous request? (default: false)
-         * @param   Object   settings Other settings when perform the ajax request like some undocumented
-         * Request Headers.
-         * WARNING: an invalid header here may make the request fail silently.
+         * @param   Object   settings Other settings when perform the ajax request
          * @return  String            Response text.
          */
         this.sendAJAX = function sendAJAX(url, method, data, async, settings) {
             var xhr = new XMLHttpRequest(),
                 dataString = "",
                 dataList = [];
-            var CONTENT_TYPE_HEADER = "Content-Type";
             method = method && method.toUpperCase() || "GET";
-            var contentTypeValue = settings && settings.contentType || "application/x-www-form-urlencoded";
+            var contentType = settings && settings.contentType || "application/x-www-form-urlencoded";
             xhr.open(method, url, !!async);
             this.log("sendAJAX(): Using HTTP method: '" + method + "'", "debug");
-            if (settings && settings.overrideMimeType) {
-                xhr.overrideMimeType(settings.overrideMimeType);
-            }
-            if (settings && settings.headers) {
-               for (var header in settings.headers) {
-                   if (header === CONTENT_TYPE_HEADER) {
-                      // this way Content-Type is correctly overriden,
-                      // otherwise it is concatenated by xhr.setRequestHeader()
-                      // see https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/setRequestHeader
-                      // If the header was already set, the value will be augmented.
-                       contentTypeValue = settings.headers[header];
-                   } else {
-                       xhr.setRequestHeader(header, settings.headers[header]);
-                   }
-              }
-            }
+            xhr.overrideMimeType("text/plain; charset=x-user-defined");
             if (method === "POST") {
                 if (typeof data === "object") {
                     for (var k in data) {
-                        if (data.hasOwnProperty(k)) {
-                            dataList.push(form_urlencoded(k) + "=" +
-                             form_urlencoded(data[k].toString()));
-                        }
+                        dataList.push(encodeURIComponent(k) + "=" + encodeURIComponent(data[k].toString()));
                     }
                     dataString = dataList.join('&');
                     this.log("sendAJAX(): Using request data: '" + dataString + "'", "debug");
                 } else if (typeof data === "string") {
                     dataString = data;
                 }
-                xhr.setRequestHeader(CONTENT_TYPE_HEADER, contentTypeValue);
+                xhr.setRequestHeader("Content-Type", contentType);
             }
             xhr.send(method === "POST" ? dataString : null);
             return xhr.responseText;
         };
 
         /**
-         * Sets a value to form element by CSS3 or XPath selector.
-         *
-         * With makeSelector() helper can by easily used with name or label selector
-         *     @exemple setFieldValue(this.makeSelector('email', 'name'), 'value')
-         *
-         * @param String|Object            CSS3|XPath selector
-         * @param Mixed                    Input value
-         * @param HTMLElement|String|null  scope Element to search child elements within
-         * @return bool
-         */
-        this.setFieldValue = function setFieldValue(selector, value, scope) {
-            var self = this;
-            var fields = this.findAll(selector, scope);
-            var values = value;
-
-            if (!Array.isArray(value)) {
-                values = [value];
-            }
-
-            if (fields && fields.length > 1) {
-                fields = [].filter.call(fields, function(elm){
-                    if (elm.nodeName.toLowerCase() === 'input' &&
-                        ['checkbox', 'radio'].indexOf(elm.getAttribute('type')) !== -1) {
-                        return values.indexOf(elm.getAttribute('value')) !== -1;
-                    }
-                    return true;
-                });
-                [].forEach.call(fields, function(elm) {
-                    self.setField(elm, value);
-                });
-            } else {
-                this.setField(fields[0], value);
-            }
-            return true;
-        };
-
-        /**
-         * Sets a field value. Fails silently, but log
+         * Sets a field (or a set of fields) value. Fails silently, but log
          * error messages.
          *
-         * @param  HTMLElement  field  One element defining a field
-         * @param  mixed        value  The field value to set
+         * @param  HTMLElement|NodeList  field  One or more element defining a field
+         * @param  mixed                 value  The field value to set
          */
         this.setField = function setField(field, value) {
-            /*eslint complexity:0*/
-            var logValue, out, filter;
-            value = logValue = value || "";
+            /*jshint maxcomplexity:99 */
+            var logValue, fields, out;
+            value = logValue = (value || "");
+
+            if (field instanceof NodeList || field instanceof Array) {
+                fields = field;
+                field = fields[0];
+            }
 
             if (!(field instanceof HTMLElement)) {
-                var error = new Error('setField: Invalid field ; only HTMLElement is supported');
+                var error = new Error('Invalid field type; only HTMLElement and NodeList are supported');
                 error.name = 'FieldNotFound';
                 throw error;
             }
 
             if (this.options && this.options.safeLogs && field.getAttribute('type') === "password") {
                 // obfuscate password value
-                logValue = new Array(('' + value).length + 1).join("*");
+                logValue = new Array(value.length + 1).join("*");
             }
+
             this.log('Set "' + field.getAttribute('name') + '" field value to ' + logValue, "debug");
 
             try {
@@ -1020,52 +811,55 @@
                 this.log("Unable to focus() input field " + field.getAttribute('name') + ": " + e, "warning");
             }
 
-            filter = String(field.getAttribute('type') ? field.getAttribute('type') : field.nodeName).toLowerCase();
-            switch (filter) {
-                case "checkbox":
-                case "radio":
-                    field.checked = value ? true : false;
-                    break;
-                case "file":
-                    throw {
-                        name: "FileUploadError",
-                        message: "File field must be filled using page.uploadFile",
-                        path: value,
-                        id: field.id || null
-                    };
-                    break;
-                case "select":
-                    if (field.multiple) {
-                        [].forEach.call(field.options, function(option) {
-                            option.selected = value.indexOf(option.value) !== -1;
-                        });
-                        // If the values can't be found, try search options text
-                        if (field.value === "") {
-                            [].forEach.call(field.options, function(option) {
-                                option.selected = value.indexOf(option.text) !== -1;
-                            });
-                        }
-                    } else {
-                        // PhantomJS 1.x.x can't handle setting value to ''
-                        if (value === "") {
-                            field.selectedIndex = -1;
-                        } else {
-                            field.value = value;
-                        }
+            var nodeName = field.nodeName.toLowerCase();
 
-                        // If the value can't be found, try search options text
-                        if (field.value !== value) {
-                            [].some.call(field.options, function(option) {
-                                option.selected = value === option.text;
-                                return value === option.text;
-                            });
-                        }
+            switch (nodeName) {
+                case "input":
+                    var type = field.getAttribute('type') || "text";
+                    switch (type.toLowerCase()) {
+                        case "checkbox":
+                            if (fields.length > 1) {
+                                var values = value;
+                                if (!Array.isArray(values)) {
+                                    values = [values];
+                                }
+                                Array.prototype.forEach.call(fields, function _forEach(f) {
+                                    f.checked = values.indexOf(f.value) !== -1 ? true : false;
+                                });
+                            } else {
+                                field.checked = value ? true : false;
+                            }
+                            break;
+                        case "file":
+                            throw {
+                                name:    "FileUploadError",
+                                message: "File field must be filled using page.uploadFile",
+                                path:    value
+                            };
+                        case "radio":
+                            if (fields) {
+                                Array.prototype.forEach.call(fields, function _forEach(e) {
+                                    e.checked = (e.value === value);
+                                });
+                            } else {
+                                out = 'Provided radio elements are empty';
+                            }
+                            break;
+                        default:
+                            field.value = value;
+                            break;
                     }
                     break;
-                default:
+                case "select":
+                case "textarea":
                     field.value = value;
+                    break;
+                default:
+                    out = 'Unsupported field type: ' + nodeName;
+                    break;
             }
 
+            // firing the `change` and `input` events
             ['change', 'input'].forEach(function(name) {
                 var event = document.createEvent("HTMLEvents");
                 event.initEvent(name, true, true);
@@ -1076,8 +870,7 @@
             try {
                 field.blur();
             } catch (err) {
-                this.log("Unable to blur() input field " + field.getAttribute('name') +
-                 ": " + err, "warning");
+                this.log("Unable to blur() input field " + field.getAttribute('name') + ": " + err, "warning");
             }
             return out;
         };
@@ -1091,15 +884,5 @@
         this.visible = function visible(selector) {
             return [].some.call(this.findAll(selector), this.elementVisible);
         };
-
-        /**
-         * Checks if all elements matching a given selector are visible in remote page.
-         *
-         * @param  String  selector  CSS3 selector
-         * @return Boolean
-         */
-        this.allVisible = function allVisible(selector) {
-            return [].every.call(this.findAll(selector), this.elementVisible);
-        };
     };
-})(typeof exports ===  "object" && !(exports instanceof Element) ? exports : window);
+})(typeof exports === "object" ? exports : window);

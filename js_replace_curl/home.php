@@ -1,3 +1,3 @@
 <?php 
-exec("C:/MySelf/code/www/js_replace_curl/casperjs/batchbin/casperjs.bat
- C:/MySelf/code/www/js_replace_curl/test.js",$out);
+// echo exec("C:/MySelf/code/www/js_replace_curl/casperjs/bin/casperjs C:/MySelf/code/www/js_replace_curl/casperjs/test.js");
+echo exec("C:/MySelf/code/www/js_replace_curl/casperjs/bin/casperjs C:/MySelf/code/www/js_replace_curl/casperjs/LoginTest.js");

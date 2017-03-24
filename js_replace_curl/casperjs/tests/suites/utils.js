@@ -1,4 +1,5 @@
-/*eslint strict:0, max-statements:0*/
+/*global casper*/
+/*jshint strict:false, maxstatements:99*/
 var utils = require('utils'),
     t = casper.test,
     x = require('casper').selectXPath;
@@ -314,7 +315,7 @@ casper.test.begin('isJsFile() tests', 5, function(test) {
         '':             false,
         'toto.png':     false,
         'plop':         false,
-        'gniii.coffee': '.coffee' in require.extensions || false,
+        'gniii.coffee': true,
         'script.js':    true
     };
     for (var testCase in testCases) {
@@ -326,7 +327,7 @@ casper.test.begin('isJsFile() tests', 5, function(test) {
 
 
 casper.test.begin('mergeObjects() tests', 10, function(test) {
-    /*eslint eqeqeq:0 */
+    /* jshint eqeqeq:false */
     var testCases = [
         {
             obj1: {a: 1}, obj2: {b: 2}, merged: {a: 1, b: 2}

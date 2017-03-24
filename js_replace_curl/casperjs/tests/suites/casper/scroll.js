@@ -1,4 +1,5 @@
-/*eslint strict:0*/
+/*global casper*/
+/*jshint strict:false*/
 casper.test.begin('Casper.scrollTo()', 2, function(test) {
     casper.start().then(function() {
         this.setContent('<div style="width:2000px;height:2000px">large div is large</div>');

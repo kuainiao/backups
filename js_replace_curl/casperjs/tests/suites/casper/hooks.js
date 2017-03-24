@@ -1,4 +1,5 @@
-/*eslint strict:0*/
+/*global casper*/
+/*jshint strict:false*/
 casper.test.begin('onStepComplete() hook tests', 1, function(test) {
     var stepResults = [];
     casper.options.onStepComplete = function(self, stepResult) {
